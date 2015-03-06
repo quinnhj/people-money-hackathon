@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "compile": "lessc public/less/style.less > public/stylesheets/style.css; browserify public/javascripts/main.js -o public/javascripts/bundle.js",
-    "start": "node ./bin/www"
+    "start": "npm run compile; node ./bin/www"
   },
   "dependencies": {
     "backbone": "*",
