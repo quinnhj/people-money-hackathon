@@ -20,7 +20,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/hello', function(req, res, next) {
-    capitalApi.getAccounts(printCB);
+    // capitalApi.getAllTransactions(printCB);
     res.render('hello', { title: 'HelloWorld' });
 });
 
