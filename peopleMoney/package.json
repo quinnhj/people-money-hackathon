@@ -18,10 +18,12 @@
     "express-handlebars": "*",
     "jade": "~1.9.2",
     "jquery": "*",
+    "jshint": "*",
     "less": "*",
     "mongodb": "*",
     "monk": "*",
     "morgan": "~1.5.1",
+    "request": "*",
     "serve-favicon": "~2.2.0",
     "socket.io": "*",
     "underscore": "*"
