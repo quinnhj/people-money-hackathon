@@ -1,10 +1,11 @@
 "use strict";
+var privateConfig = require('./privateConfig.js');
 
 var request         = require('request');
 
 // API Access constants for levelMoney
-var KEY = '7d5e4a71'
-var SECRET = '8c9c375d'
+var KEY = privateConfig.nexmoKey;
+var SECRET = privateConfig.nexmoSecret;
 
 //////////////////////////////////////////////////////////////////////////////
 // Helper function to manage REST calls

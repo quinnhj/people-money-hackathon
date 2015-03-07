@@ -1,4 +1,5 @@
 
+var privateConfig = require('../src/privateConfig.js');
 var express = require('express');
 var capitalApi = require('../src/capitalApi.js');
 var nexmoApi = require('../src/nexmoApi.js');
@@ -26,12 +27,12 @@ router.get('/hello', function(req, res, next) {
     //capitalApi.getAllTransactions(printCB);
 
     // Nexmo API Test
-    //nexmoTest = {
-    //    to: '18647040585',
-    //    from: '12036639233',
-    //    text: 'Welcome+to+Nexmo'
-    //};
-    //nexmoApi.sendMessage(nexmoTest, printCB);
+    nexmoTest = {
+        to: privateConfig.testNumber,
+        from: '12036639233',
+        text: 'Welcome+to+Nexmo'
+    };
+    nexmoApi.sendMessage(nexmoTest, printCB);
 
     // Yodlee API Test
     yodleeApi.cobLogin(printCB);
