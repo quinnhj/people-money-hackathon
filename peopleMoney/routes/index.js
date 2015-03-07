@@ -34,6 +34,10 @@ router.get('/hello', function(req, res, next) {
     res.render('hello', { title: 'HelloWorld' });
 });
 
+router.get('/dashboard', function(req, res, next) {
+    res.render('dashboard', {});
+});
+
 
 
 
