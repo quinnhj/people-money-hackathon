@@ -59,10 +59,26 @@ router.get('/settings', function(req, res, next) {
 });
 
 router.get('/getFinancialData', function(req, res, next) {
-    // TODO: Actually return real data
-    console.log('Got request for financial data from uid: ', req.query.uid);
-    var fakeObj = {fake: 'fake'};
-    res.send(fakeObj);
+
+    var uid = parseInt(req.query.uid);
+    var authToken = req.query.authToken;
+
+    if (!uid || !authToken) {
+        res.send({error: 'Invalid uid or authToken'});
+        return;
+    }
+
+    var payload = {error: null};
+    capitalApi.getAllTransactions(uid, authToken, function(err, data) {
+        if (err) res.send({error: 'Error'});
+        payload.transactions = data;
+        capitalApi.getAccounts(uid, authToken, function(err, data){
+            if (err) res.send({error: 'Error'});
+            payload.accounts = data;
+            res.send(payload);
+        });
+    });
+
 });
 
 
