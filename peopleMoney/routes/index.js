@@ -56,6 +56,12 @@ router.get('/settings', function(req, res, next) {
     res.render('settings', {});
 });
 
+router.get('/getFinancialData', function(req, res, next) {
+    // TODO: Actually return real data
+    console.log('Got request for financial data from uid: ', req.query.uid);
+    var fakeObj = {fake: 'fake'};
+    res.send(fakeObj);
+});
 
 
 module.exports = router;
