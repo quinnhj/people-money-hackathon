@@ -27,12 +27,12 @@ router.get('/hello', function(req, res, next) {
     //capitalApi.getAllTransactions(printCB);
 
     // Nexmo API Test
-    nexmoTest = {
-        to: privateConfig.testNumber,
-        from: '12036639233',
-        text: 'Welcome+to+Nexmo'
-    };
-    nexmoApi.sendMessage(nexmoTest, printCB);
+    //nexmoTest = {
+    //    to: privateConfig.testNumber,
+    //    from: '12036639233',
+    //    text: 'Welcome+to+Nexmo'
+    //};
+    //nexmoApi.sendMessage(nexmoTest, printCB);
 
     // Yodlee API Test
     yodleeApi.cobLogin(printCB);
