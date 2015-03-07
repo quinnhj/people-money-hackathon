@@ -71,10 +71,10 @@ router.get('/getFinancialData', function(req, res, next) {
     var payload = {error: null};
     capitalApi.getAllTransactions(uid, authToken, function(err, data) {
         if (err) res.send({error: 'Error'});
-        payload.transactions = data;
+        payload.transactions = data.transactions;
         capitalApi.getAccounts(uid, authToken, function(err, data){
             if (err) res.send({error: 'Error'});
-            payload.accounts = data;
+            payload.accounts = data.accounts;
             res.send(payload);
         });
     });
