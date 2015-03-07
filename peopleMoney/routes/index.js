@@ -24,7 +24,9 @@ router.get('/', function(req, res, next) {
 
 router.get('/hello', function(req, res, next) {
     // Capital one API Test
-    //capitalApi.getAllTransactions(printCB);
+    //var uid = 1110568334;
+    //var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
+    //capitalApi.getAllTransactions(uid, authToken, printCB);
 
     // Nexmo API Test
     //nexmoTest = {
@@ -35,7 +37,7 @@ router.get('/hello', function(req, res, next) {
     //nexmoApi.sendMessage(nexmoTest, printCB);
 
     // Yodlee API Test
-    yodleeApi.cobLogin(printCB);
+    //yodleeApi.cobLogin(printCB);
 
     res.render('hello', { title: 'HelloWorld' });
 });
