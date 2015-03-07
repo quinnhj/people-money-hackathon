@@ -44,6 +44,17 @@ router.get('/dashboard', function(req, res, next) {
     res.render('dashboard', {});
 });
 
+router.get('/map', function(req, res, next) {
+    res.render('map', {});
+});
+
+router.get('/goals', function(req, res, next) {
+    res.render('goals', {});
+});
+
+router.get('/settings', function(req, res, next) {
+    res.render('settings', {});
+});
 
 
 
