@@ -24,9 +24,11 @@ router.get('/', function(req, res, next) {
 
 router.get('/hello', function(req, res, next) {
     // Capital one API Test
-    //var uid = 1110568334;
-    //var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
+    var uid = 1110570166;
+    var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
     //capitalApi.getAllTransactions(uid, authToken, printCB);
+    capitalApi.getAllTransactions(uid, authToken, printCB, [Date.parse('2015-01-01T00:00:00.000Z'), Date.parse('2015-03-07T00:00:00.000Z')]);
+    //capitalApi.getAccounts(uid, authToken, printCB);
 
     // Nexmo API Test
     //nexmoTest = {
@@ -37,6 +39,9 @@ router.get('/hello', function(req, res, next) {
     //nexmoApi.sendMessage(nexmoTest, printCB);
 
     // Yodlee API Test
+    //var user = 'sbMemwuda1';
+    //var pass = 'sbMemwuda1#123';
+    //yodleeApi.consumerLogin(user, pass, printCB);
     //yodleeApi.cobLogin(printCB);
 
     res.render('hello', { title: 'HelloWorld' });

@@ -15,10 +15,10 @@ var API_URL = 'https://api.levelmoney.com/api/v2/hackathon/';
 //////////////////////////////////////////////////////////////////////////////
 
 function sendApiRequest(apiName, verify, args, cb) {
-    console.log(verify)
+    //console.log(verify)
     var fullArgs = {"args": {"uid": verify.uid, "token": verify.authToken, "api-token": API_TOKEN}};
     _.extend(fullArgs, args);
-    console.log(fullArgs)
+    //console.log(fullArgs)
 
     var options = {
         uri: API_URL + apiName,
@@ -55,12 +55,27 @@ function getAccounts(uid, authToken, cb) {
     sendApiRequest('get-accounts', verify, {}, cb);
 }
 
-function getAllTransactions(uid, authToken, cb) {
+// filter should be an array of two objects
+function getAllTransactions(uid, authToken, cb, filter) {
     var verify = {
         'uid': uid,
         'authToken': authToken
     }
-    sendApiRequest('get-all-transactions', verify, {}, cb);
+    sendApiRequest('get-all-transactions', verify, {}, function(err, val) {
+        var transactions = val.transactions;
+        if (filter) {
+            var startDate = filter[0];
+            var endDate = filter[1];
+            var filtered = transactions.filter(function (el) {
+                var tTime = Date.parse(el['transaction-time']);
+                return tTime >= startDate &&
+                tTime <= endDate;
+            });
+            cb(err, filtered);
+        } else {
+            cb(err, transactions);
+        }
+    });
 }
 
 function getProjectedTransactionsForMonth(uid, authToken, year, month, cb) {
