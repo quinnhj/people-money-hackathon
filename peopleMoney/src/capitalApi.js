@@ -14,9 +14,11 @@ var API_URL = 'https://api.levelmoney.com/api/v2/hackathon/';
 // Helper function to manage REST calls
 //////////////////////////////////////////////////////////////////////////////
 
-function sendApiRequest(apiName, args, cb) {
-    var fullArgs = {"args": {"uid": UID, "token": AUTH_TOKEN, "api-token": API_TOKEN}};
+function sendApiRequest(apiName, verify, args, cb) {
+    console.log(verify)
+    var fullArgs = {"args": {"uid": verify.uid, "token": verify.authToken, "api-token": API_TOKEN}};
     _.extend(fullArgs, args);
+    console.log(fullArgs)
 
     var options = {
         uri: API_URL + apiName,
@@ -45,25 +47,45 @@ function sendApiRequest(apiName, args, cb) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-function getAccounts(cb) {
-    sendApiRequest('get-accounts', {}, cb);
+function getAccounts(uid, authToken, cb) {
+    var verify = {
+        'uid': uid,
+        'authToken': authToken
+    }
+    sendApiRequest('get-accounts', verify, {}, cb);
 }
 
-function getAllTransactions(cb) {
-    sendApiRequest('get-all-transactions', {}, cb);
+function getAllTransactions(uid, authToken, cb) {
+    var verify = {
+        'uid': uid,
+        'authToken': authToken
+    }
+    sendApiRequest('get-all-transactions', verify, {}, cb);
 }
 
-function getProjectedTransactionsForMonth(year, month, cb) {
-    sendApiRequest('projected-transactions-for-month',
+function getProjectedTransactionsForMonth(uid, authToken, year, month, cb) {
+    var verify = {
+        'uid': uid,
+        'authToken': authToken
+    }
+    sendApiRequest('projected-transactions-for-month', verify,
              {year: year, month: month}, cb);
 }
 
-function getRecentHistoricalAndProjectedBalances(cb) {
-    sendApiRequest('balances', {}, cb);
+function getRecentHistoricalAndProjectedBalances(uid, authToken, cb) {
+    var verify = {
+        'uid': uid,
+        'authToken': authToken
+    }
+    sendApiRequest('balances', verify, {}, cb);
 }
 
-function findSimilarTransactions(transactions, cb) {
-    sendApiRequest('find-similar-transactions',
+function findSimilarTransactions(uid, authToken, transactions, cb) {
+    var verify = {
+        'uid': uid,
+        'authToken': authToken
+    }
+    sendApiRequest('find-similar-transactions', verify,
             {'transaction-ids': transactions}, cb);
 }
 
