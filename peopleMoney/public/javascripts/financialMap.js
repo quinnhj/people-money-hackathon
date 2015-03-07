@@ -105,7 +105,7 @@ function getData(uid, authToken, cb) {
     request(options, function (err, res, body) {
         if (err) cb(err);
         console.log('finished Req');
-        cb(false, body);
+        cb(false, JSON.parse(body));
     });
 }
 
