@@ -303,7 +303,7 @@ function createViz (root) {
     var links = getLinksFromNodes(nodes);
     console.log('Links: ', links);
 
-    svg.selectAll("rect")
+    var rect = svg.selectAll("rect")
         .data(nodes)
         .enter()
         .append("rect")
@@ -345,6 +345,21 @@ function createViz (root) {
             .attr("class", "area")
             .attr("d", area);
 
+    var tooltip = d3.select("body")
+        .append("div")
+        .style("position", "absolute")
+        .style("z-index", "10")
+        .style("visibility", "hidden")
+        .style("background-color", "white")
+        .style("border", "1px solid")
+        .style("border-radius", "10px")
+        .style("padding", "3px")
+        .text("tooltip");
+
+    rect.on("mouseover", function(d){tooltip.text(d.node.name); return tooltip.style("visibility", "visible");})
+        .on("mousemove", function(d){return tooltip.style("top",
+            (d3.event.pageY-15)+"px").style("left",(d3.event.pageX+15)+"px");})
+        .on("mouseout", function(d){return tooltip.style("visibility", "hidden");});
 
 
 
