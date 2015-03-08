@@ -14,7 +14,7 @@ var numTransactions = 0;
 
 var width = $('#map-container').width(),
     height = 600,
-    margin = 4;
+    margin = 6;
 
 
 function makeSvg() {
@@ -215,6 +215,51 @@ function resizeNodes (nodes, graphWidth, graphHeight) {
 
 }
 
+function getLinksFromNodes (nodes) {
+    // Structure:
+    //
+    // [ link1, link2, ... ]
+    //
+    // link1 = [start, stop]
+    // start = {x: xcoord, y0: ycoord-bottom, y1: ycoord-top}
+
+    // TODO: Make this do more than left->right expenses.
+    var links = []
+    _.each(nodes, function (node) {
+        var children = [];
+        if (node.node.type === 'account') {
+            return;
+        } else if (node.node.type === 'user') {
+            children = node.node.categories;
+        } else if (node.node.type === 'category') {
+            children = node.node.children;
+        }
+
+        _.each(children, function (rawChild) {
+            // TODO: Tag with colors
+            // TODO: have hash / pointer, not search for rawChild
+
+            var child = _.find(nodes, function (v) {
+                return (v.node === rawChild);
+            });
+
+            var linkStart = {
+                x: node.x + node.width,
+                y0: node.y,
+                y1: node.y + node.height
+            }
+            var linkEnd = {
+                x: child.x,
+                y0: child.y,
+                y1: child.y + child.height
+            }
+            links.push([linkStart, linkEnd]);
+        });
+    });
+    return links;
+}
+
+
 
 function createViz (root) {
 
@@ -237,6 +282,8 @@ function createViz (root) {
     var nodes = positionsFromTree(root, graphWidth, graphHeight);
     console.log('Nodes: ', nodes);
     resizeNodes(nodes, graphWidth, graphHeight);
+    var links = getLinksFromNodes(nodes);
+    console.log('Links: ', links);
 
     svg.selectAll("rect")
         .data(nodes)
@@ -260,6 +307,24 @@ function createViz (root) {
             }
             return color(d.node.name);
         });
+
+    var area = d3.svg.area()
+        .x(function (d) {
+            return d.x;
+        })
+        .y0(function (d) {
+            return d.y0;
+        })
+        .y1(function (d) {
+            return d.y1;
+        });
+
+    svg.selectAll("path.area")
+            .data(links)
+        .enter().append("path")
+            .style("fill", "rgba(10,10,150,0.33")
+            .attr("class", "area")
+            .attr("d", area);
 
 
 
