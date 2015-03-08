@@ -224,6 +224,9 @@ function createViz (root) {
     var margin = 10;
     var graphWidth = width - margin*2;
     var graphHeight = height - margin*2;
+
+    var color = d3.scale.category20();
+
     var graph = svg
         .append("g")
         .attr("width", graphWidth)
@@ -250,6 +253,12 @@ function createViz (root) {
         })
         .attr("width", function (d) {
             return d.width;
+        })
+        .attr("fill", function (d) {
+            if (d.node.merchant) {
+                return color(d.node.merchant);
+            }
+            return color(d.node.name);
         });
 
 
@@ -288,7 +297,6 @@ function createViz (root) {
         .attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + ")";
         });
-    var color = d3.scale.category20();
     // Draw the rectangles at each end of the link that
     // correspond to a given node, and then decorate the chart
     // with the names for each node.
