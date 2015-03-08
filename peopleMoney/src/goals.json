@@ -1,4 +1,24 @@
 {
     "1110568334": [
+        {
+            "merchant": "CHECK 1110",
+            "percentage": "20",
+            "category": "Check"
+        },
+        {
+            "merchant": "SWEENEYS CHEVROLET",
+            "percentage": "-40",
+            "category": "Auto Payment"
+        },
+        {
+            "merchant": "FUEL CITY",
+            "percentage": "15",
+            "category": "Gas & Fuel"
+        },
+        {
+            "merchant": "GEICO 000-000-0000 DC",
+            "percentage": "-35",
+            "category": "Auto Insurance"
+        }
     ]
 }

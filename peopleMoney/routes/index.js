@@ -175,7 +175,7 @@ router.get('/dashboard', function(req, res, next) {
         }
         console.log(goalsRender);
         plotly.plot(data, graphOptions, function (err, msg) {
-            res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=640&height=480', goals: goalsRender});
+            res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=400&height=400', goals: goalsRender});
         });
     });
 });

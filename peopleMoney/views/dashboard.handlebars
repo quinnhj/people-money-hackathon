@@ -1,14 +1,14 @@
 
-<div id="progress-panel" class="panel panel-default">
+<div id="progress-panel" class="dashboard-panel panel panel-default col-md-7">
     <div class="panel-body">
         <h2>Progress</h2>
 
         {{! TODO: Set value dynamically }}
-        <div class="progress">
+        <!-- <div class="progress">
             <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%">
                 <span class="sr-only">40% Complete (success)</span>
             </div>
-        </div>
+        </div> -->
 
         <div id="goal-panel-container">
             {{! Append to using backbone }}
@@ -17,33 +17,28 @@
         {{! TODO: Remove once we auto populate }}
 
         {{#each goals}}
-            <div class="col-md-4 goal-panel well">
-                <p>{{this.goal}}</p>
+            <div class="col-md-6 goal-panel well">
+                <h4>{{this.goal.merchant}}</h4>
+                {{this.goal.category}}<br>
+                <!-- Goal: {{this.goal.percentage}}%<br> -->
+
+                Progress towards goal:
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="{{this.percentChange}}" aria-valuemin="0" aria-valuemax="100" style="width: {{this.percentChange}}%;">
+                        {{this.percentChange}}%
+                    </div>
+                </div>
+
             </div>
         {{/each}}
     </div>
 </div>
 
-<div id="goal-list" class="panel panel-default col-md-4">
-    <div class="panel-body">
-        <h2>Your Goals</h2>
-
-        <div id="goal-container">
-            {{! Append to using backbone }}
-        </div>
-
-        {{! TODO: Remove once we auto populate }}
-        <div class="well well-sm">...</div>
-        <div class="well well-sm">...</div>
-        <div class="well well-sm">...</div>
-    </div>
-</div>
-
-<div id="health-graph" class="panel panel-default col-md-offset-1 col-md-7">
+<div id="health-graph" class="dashboard-panel panel panel-default col-md-5">
     <div id="health-graph" class="panel-body">
         <h2>Financial Health</h2>
-        <div id="health-graph-container">
-            <iframe id="health-iframe" frameborder="0" seamless="seamless" scrolling="no" src="{{healthPlotUrl}}" ></iframe>
+        <div id="health-graph-container" class="plotly-graph">
+            <iframe id="health-iframe" class="plotly-graph" frameborder="0" seamless="seamless" scrolling="no" src="{{healthPlotUrl}}" ></iframe>
         </div>
     </div>
 </div>
