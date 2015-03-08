@@ -4,8 +4,8 @@ var _               = require('underscore');
 var request         = require('request');
 
 // API Access constants for levelMoney
-var UID = 1110568334;
-var AUTH_TOKEN = 'D88517D61377232E3BACE8CA3EA15E7B';
+//var UID = 1110568334;
+//var AUTH_TOKEN = 'D88517D61377232E3BACE8CA3EA15E7B';
 var API_TOKEN = 'HackathonApiToken';
 var API_URL = 'https://api.levelmoney.com/api/v2/hackathon/';
 
@@ -55,7 +55,7 @@ function getAccounts(uid, authToken, cb) {
     sendApiRequest('get-accounts', verify, {}, cb);
 }
 
-// filter should be an array of two objects
+// filter should be an array of two date objects [new Date(...), new Date(...)]
 function getAllTransactions(uid, authToken, cb, filter) {
     var verify = {
         'uid': uid,
@@ -67,7 +67,7 @@ function getAllTransactions(uid, authToken, cb, filter) {
             var startDate = filter[0];
             var endDate = filter[1];
             var filtered = transactions.filter(function (el) {
-                var tTime = Date.parse(el['transaction-time']);
+                var tTime = new Date(el['transaction-time']);
                 return tTime >= startDate &&
                 tTime <= endDate;
             });
@@ -92,7 +92,9 @@ function getRecentHistoricalAndProjectedBalances(uid, authToken, cb) {
         'uid': uid,
         'authToken': authToken
     }
-    sendApiRequest('balances', verify, {}, cb);
+    sendApiRequest('balances', verify, {}, function(err, val) {
+        cb(err, val);
+    });
 }
 
 function findSimilarTransactions(uid, authToken, transactions, cb) {
