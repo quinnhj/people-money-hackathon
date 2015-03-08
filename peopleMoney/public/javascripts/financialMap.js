@@ -149,7 +149,7 @@ function positionsFromTree (root, graphWidth, graphHeight) {
 
 
 function positionsHelper (node, graphWidth, graphHeight, nodes, offsets, totals) {
-    var blank = { cy: 0, cx: 0, node: null , r: 10};
+    var blank = { y: 0, x: 0, node: null , width: 25, height: 150};
 
     // Recursively call children
     if (node.type === 'user') {
@@ -167,23 +167,23 @@ function positionsHelper (node, graphWidth, graphHeight, nodes, offsets, totals)
 
     // Set sizes based on value.
     if (node.type === 'category' || node.type === 'transaction') {
-        blank.r = Math.max(2, Math.round(node.val / 1000));
+        blank.height = Math.max(4, Math.round(node.val / 1000));
         // blank.r = Math.round(node.val / 10000);
     }
 
-    blank.r = Math.abs(blank.r);
-    blank.cx = offsets[node.type] * graphWidth;
-    blank.cy = totals[node.type] + margin + blank.r;
+    blank.height = Math.abs(blank.height);
+    blank.x = offsets[node.type] * graphWidth;
+    blank.y = totals[node.type] + margin;
     blank.node = node;
 
-    totals[node.type] += (blank.r*2) + (2*margin);
+    totals[node.type] += blank.height + margin;
     nodes.push(blank);
 }
 
 
 function resizeNodes (nodes, graphWidth, graphHeight) {
     var maxY = _.max(_.map(nodes, function (v) {
-        return v.cy + v.r;
+        return v.y + v.height;
     }));
 
     // TODO: Account for margin.
@@ -192,8 +192,8 @@ function resizeNodes (nodes, graphWidth, graphHeight) {
     // Resize everything
     _.each(nodes, function (node) {
         if (node.node.type === 'category' || node.node.type === 'transaction') {
-            node.r = Math.max(2, Math.floor(node.r * multFactor));
-            node.cy = Math.floor(node.cy * multFactor);
+            node.height = Math.max(4, Math.floor(node.height * multFactor));
+            node.y = Math.floor(node.y * multFactor);
         }
     });
 
@@ -201,14 +201,14 @@ function resizeNodes (nodes, graphWidth, graphHeight) {
     _.each(['account', 'user', 'category', 'transaction'], function (type) {
         var maxY = _.max(_.map(nodes, function (v) {
             if (v.node.type === type) {
-                return v.cy + v.r;
+                return v.y + v.height;
             }
             return 0;
         }));
         var delta = Math.floor((graphHeight - maxY)/2);
         _.each(nodes, function (node) {
             if (node.node.type === type) {
-                node.cy += delta;
+                node.y += delta;
             }
         });
     });
@@ -235,18 +235,21 @@ function createViz (root) {
     console.log('Nodes: ', nodes);
     resizeNodes(nodes, graphWidth, graphHeight);
 
-    svg.selectAll("circle")
+    svg.selectAll("rect")
         .data(nodes)
         .enter()
-        .append("circle")
-        .attr("cx", function (d) {
-            return d.cx;
+        .append("rect")
+        .attr("x", function (d) {
+            return d.x;
         })
-        .attr("cy", function (d) {
-            return d.cy;
+        .attr("y", function (d) {
+            return d.y;
         })
-        .attr("r", function (d) {
-            return d.r;
+        .attr("height", function (d) {
+            return d.height;
+        })
+        .attr("width", function (d) {
+            return d.width;
         });
 
 
