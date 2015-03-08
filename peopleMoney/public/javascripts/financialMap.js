@@ -315,7 +315,7 @@ function createViz (root) {
         .append("g")
         .attr("width", graphWidth)
         .attr("height", graphHeight)
-        .attr("transform", "translate(" + margin + "," + margin + ")"); // Offsets coordinate system
+        .attr("transform", "translate(" + margin + "," + margin*2 + ")"); // Offsets coordinate system
 
     // TODO: Create position map from tree.
     var nodes = positionsFromTree(root, graphWidth, graphHeight);
@@ -415,6 +415,10 @@ function createViz (root) {
                 } else {
                     dataToViz(d.node.name);
                 }
+            }
+            if (d.node.type === 'transaction') {
+                var html = Handlebars.templates["mapGoal"]({name: d.node.name});
+                console.log('HTML: ', html);
             }
         });
 
