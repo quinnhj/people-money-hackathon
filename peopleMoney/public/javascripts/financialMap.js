@@ -432,21 +432,23 @@ function createViz (root) {
 
     path.exit().remove();
 
+    var regColor = "rgba(10,10,150,0.33)";
+    var goalColor = "rgba(8,178,36,0.6)";
     path.enter().append("path")
             .style("fill", function (d) {
                 if (d[0].goal) {
-                    return "rgba(10,10,150,0.8)";
+                    return goalColor;
                 }
-                return "rgba(10,10,150,0.33";
+                return regColor;
             })
             .attr("class", "area")
             .attr("d", area);
 
     path.style("fill", function (d) {
                 if (d[0].goal) {
-                    return "rgba(10,10,150,0.8)";
+                    return goalColor;
                 }
-                return "rgba(10,10,150,0.33";
+                return regColor;
             })
             .attr("class", "area")
             .attr("d", area);
