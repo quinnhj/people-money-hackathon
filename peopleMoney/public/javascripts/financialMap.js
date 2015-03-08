@@ -9,10 +9,12 @@ var uid = 1110568334;
 var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
 
 var svg;
-
+var numCategories = 0;
+var numTransactions = 0;
 
 var width = $('#map-container').width(),
-    height = 800;
+    height = 600,
+    margin = 4;
 
 
 function makeSvg() {
@@ -160,7 +162,8 @@ function formatDataTree(data) {
     _.each(data.accounts, function (account) {
         var newNode = _.extend(account, {
             name: account['account-name'],
-            type: account['account-type'],
+            type: 'account',
+            accountType: account['account-type'],
             id: account['account-id']
         });
 
@@ -176,6 +179,8 @@ function formatDataTree(data) {
         if (!categoryLookup.hasOwnProperty(t.categorization)) {
             // First time we saw this category
             // Make node for category
+            numCategories += 1;
+
             var newCategoryNode = {
                 name: t.categorization,
                 type: 'category',
@@ -204,6 +209,8 @@ function formatDataTree(data) {
     _.each(data.transactions, function (t, idx) {
         if (idx > 20) return; // Hack to keep it small
 
+        numTransactions += 1;
+
         // Node / link for transaction endpoint.
         var newNode = {
             name: t['raw-merchant'],
@@ -225,7 +232,7 @@ function formatDataTree(data) {
     //
 
     // TODO: Decide if we need to create objects for links here.
-
+    console.log('numCategories: ', numCategories, ' numTransactions: ', numTransactions);
     return {root: root};
 }
 
@@ -346,8 +353,94 @@ function createVizSplunk (data) {
     }
 }
 
+function positionsFromTree (root, graphWidth, graphHeight) {
+    var nodes = [];
+    var offsets = {
+        account: 0.1,
+        user: 0.2,
+        category: 0.5,
+        transaction: 0.9
+    };
 
-function createViz (data) {
+    var totals = {
+        account: 0,
+        user: 0,
+        category: 0,
+        transaction: 0
+    };
+
+    positionsHelper(root, graphWidth, graphHeight, nodes, offsets, totals);
+    return nodes;
+}
+
+function positionsHelper (node, graphWidth, graphHeight, nodes, offsets, totals) {
+    var blank = { cy: 0, cx: 0, node: null , r: 10};
+
+    // Recursively call children
+    if (node.type === 'user') {
+        _.each(node.accounts, function(v) {
+            positionsHelper(v, graphWidth, graphHeight, nodes, offsets, totals);
+        });
+        _.each(node.categories, function(v) {
+            positionsHelper(v, graphWidth, graphHeight, nodes, offsets, totals);
+        });
+    } else if (node.type === 'category') {
+        _.each(node.children, function(v) {
+            positionsHelper(v, graphWidth, graphHeight, nodes, offsets, totals);
+        });
+    }
+
+    // Set sizes based on value.
+    if (node.type === 'category' || node.type === 'transaction') {
+        blank.r = Math.max(2, Math.round(node.val / 1000));
+        // blank.r = Math.round(node.val / 10000);
+    }
+
+    blank.r = Math.abs(blank.r);
+    blank.cx = offsets[node.type] * graphWidth;
+    blank.cy = totals[node.type] + margin + blank.r;
+    blank.node = node;
+
+    totals[node.type] += (blank.r*2) + (2*margin);
+    nodes.push(blank);
+}
+
+function resizeNodes (nodes, graphWidth, graphHeight) {
+    var maxY = _.max(_.map(nodes, function (v) {
+        return v.cy + v.r;
+    }));
+
+    // TODO: Account for margin.
+    var multFactor = (graphHeight - 50) / maxY;
+
+    // Resize everything
+    _.each(nodes, function (node) {
+        if (node.node.type === 'category' || node.node.type === 'transaction') {
+            node.r = Math.max(2, Math.floor(node.r * multFactor));
+            node.cy = Math.floor(node.cy * multFactor);
+        }
+    });
+
+    // Center everything
+    _.each(['account', 'user', 'category', 'transaction'], function (type) {
+        var maxY = _.max(_.map(nodes, function (v) {
+            if (v.node.type === type) {
+                return v.cy + v.r;
+            }
+            return 0;
+        }));
+        var delta = Math.floor((graphHeight - maxY)/2);
+        _.each(nodes, function (node) {
+            if (node.node.type === type) {
+                node.cy += delta;
+            }
+        });
+    });
+
+}
+
+
+function createViz (root) {
 
     // SVG already exists. TODO: Why?
 
@@ -360,11 +453,30 @@ function createViz (data) {
         .attr("width", graphWidth)
         .attr("height", graphHeight)
         .attr("transform", "translate(" + margin + "," + margin + ")"); // Offsets coordinate system
-    var formatTooltip = function (d) {
-        return d.name;
-    }
+
+    // TODO: Create position map from tree.
+    var nodes = positionsFromTree(root, graphWidth, graphHeight);
+    console.log('Nodes: ', nodes);
+    resizeNodes(nodes, graphWidth, graphHeight);
+
+    svg.selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) {
+            return d.cx;
+        })
+        .attr("cy", function (d) {
+            return d.cy;
+        })
+        .attr("r", function (d) {
+            return d.r;
+        });
 
 
+
+
+    return;
 
     // TODO: Play with settings
     var sankey = d3.sankey()
@@ -479,6 +591,7 @@ function init () {
 
         var tree = formatDataTree(finData);
         console.log('Tree: ', tree);
+        createViz(tree.root);
         // createViz(formattedData);
 
     });
