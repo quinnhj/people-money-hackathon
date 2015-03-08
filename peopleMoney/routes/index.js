@@ -27,8 +27,8 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/hello', function(req, res, next) {
-    var uid = 1110570166;
-    var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
+    var uid = 1110568334;
+    var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
     // Capital one API Test
     //capitalApi.getAllTransactions(uid, authToken, printCB);
     //capitalApi.getAllTransactions(uid, authToken, printCB, [new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now())]);
@@ -64,8 +64,8 @@ router.get('/hello', function(req, res, next) {
 });
 
 router.get('/dashboard', function(req, res, next) {
-    var uid = 1110570166;
-    var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
+    var uid = 1110568334;
+    var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
     healthApi.getYearHealthScore(uid, authToken, function(err, arr) {
         var months = arr[0];
         var scores = arr[1];
@@ -195,8 +195,8 @@ router.get('/goals', function(req, res, next) {
 });
 
 router.get('/details', function(req, res, next) {
-    var uid = 1110570166;
-    var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
+    var uid = 1110568334;
+    var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
     healthApi.getLastYearSavings(uid, authToken, function(err, arr) {
         if (err) res.send({error: 'error'});
         var months = arr[0];
