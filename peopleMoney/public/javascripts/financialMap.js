@@ -45,6 +45,32 @@ function makeSvg() {
         .attr("height", height);
 }
 
+
+function getGoals(uid, authToken, cb) {
+    var options = {
+        uri: location.origin + '/getGoals?uid=' + uid + '&authToken=' + authToken,
+        method: 'GET'
+    };
+    request(options, function (err, res, body) {
+        if (err) cb(err);
+        cb(false, JSON.parse(body));
+    });
+}
+
+
+function setGoal(uid, authToken, merchant, percentage, cb) {
+    var options = {
+        uri: location.origin + '/setGoal?uid=' + uid + '&authToken=' + authToken
+                + '&merchant=' + merchant + '&percentage=' + percentage,
+        method: 'GET'
+    };
+    request(options, function (err, res, body) {
+        if (err) cb(err);
+        cb(false, JSON.parse(body));
+    });
+}
+
+
 function getData(uid, authToken, cb) {
     var options = {
         uri: location.origin + '/getFinancialData?uid=' + uid + '&authToken=' + authToken,
@@ -52,7 +78,6 @@ function getData(uid, authToken, cb) {
     }
     request(options, function (err, res, body) {
         if (err) cb(err);
-        console.log('finished Req');
         cb(false, JSON.parse(body));
     });
 }
@@ -430,6 +455,9 @@ function createViz (root) {
                 $('.mapGoal').css({'top': mouseY, 'left':mouseX - 450}).fadeIn('slow');
                 $('#close-button').on('click', function() {
                     $(this).parent().parent().parent().remove();
+                });
+                $('#goalSubmit').click(function () {
+
                 });
             }
         });
