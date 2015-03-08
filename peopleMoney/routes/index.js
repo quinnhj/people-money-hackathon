@@ -142,7 +142,7 @@ router.get('/dashboard', function(req, res, next) {
         var goalsRender = [];
         console.log('goalList', goalList);
         for (i = 0; i < goalList.length; i++) {
-            if (i === 3) break;
+            if (i === 4) break;
             var newObj = {}
             newObj.goal = goalList[i];
             var curr = 0.0;
