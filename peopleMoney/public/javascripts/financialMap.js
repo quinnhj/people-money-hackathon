@@ -2,99 +2,23 @@
 
 var d3          = require('d3');
 var request     = require('request');
+var _           = require('underscore');
 
 // Globals! Because hackathon!
 var uid = 1110568334;
 var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
+
 var svg;
 
-// Fake financial data. Should be done with call to server.
-// TODO: Get real data from REST calls.
-var fakeData = {
 
-    // Should have investments?
-    accounts: [
-        {
-            name: 'Account 1',
-            type: 'savings',
-            balance: 1000
-        }
-    ],
-
-    loans: [
-        {
-            name: 'Loan 1',
-            type: 'credit',
-            interestRate: 0.05,
-            balance: 2000
-        },
-        {
-            name: 'Loan 2',
-            type: 'credit',
-            interestRate: 0.035,
-            balance: 100000
-        },
-    ],
-
-    transactions: [
-        {
-            name: 'paycheck',
-            type: 'income',
-            amount: 2000
-        },
-        {
-            name: 'paycheck',
-            type: 'income',
-            amount: 2000
-        },
-        {
-            name: 'name1',
-            category: 1,
-            amount: -70
-        },
-        {
-            name: 'name2',
-            category: 1,
-            amount: -40
-        },
-        {
-            name: 'name2',
-            category: 1,
-            amount: -50
-        },
-        {
-            name: 'name2',
-            category: 1,
-            amount: 2000
-        },
-        {
-            name: 'name3',
-            category: 2,
-            amount: 2000
-        },
-        {
-            name: 'name4',
-            category: 2,
-            amount: 2000
-        },
-        {
-            name: 'name5',
-            category: 2,
-            amount: 2000
-        },
-        {
-            name: 'name6',
-            category: 3,
-            amount: 2000
-        }
-    ]
-};
+var width = 1000,
+    height = 1000;
 
 
 function makeSvg() {
-    svg = d3.select("#map-container").append("svg");
-        // .attr("width", width)
-        // .attr("height", height)
+    svg = d3.select("#map-container").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 }
 
 function getData(uid, authToken, cb) {
@@ -109,16 +33,69 @@ function getData(uid, authToken, cb) {
     });
 }
 
+function formatData(data) {
+    // Take raw data and fill nodes and links.
+    // var nodes = [{
+    //         name: 'user',
+    //         type: 'user'
+    // }];
+
+    var nodes = [];
+    // Links use indices in node list.
+    var links = [];
+    var accToIndex = {};
+
+
+    _.each(data.accounts, function (account) {
+        var newNode = _.extend(account, {
+            name: account['account-name'],
+            type: account['account-type'],
+            id: account['account-id']
+        });
+
+        accToIndex[account['account-id']] = nodes.length;
+        nodes.push(newNode);
+    });
+
+    _.each(data.transactions, function (t) {
+        var newNode = {
+            name: t['raw-merchant'],
+            merchant: t.merchant,
+            type: 'transaction',
+            category: t.categorization,
+        };
+
+        var newLink = {
+            src: accToIndex[t['account-id']],
+            dst: nodes.length,
+            id: t['transaction-id'],
+            time: t['transaction-time'],
+            isPending: t['is-pending'],
+            val: t.ammount * (-0.01) // Convert to outflow in cents
+        }
+
+        nodes.push(newNode);
+        links.push(newLink);
+    });
+
+    return {nodes: nodes, links: links};
+}
+
 function init () {
     console.log('Initializing Financial Map');
     makeSvg();
+    getData(uid, authToken, function (err, finData) {
+        if (err) {
+            console.log('ERROR: ', err);
+            return;
+        }
 
-    var printCB = function(err, val) {
-        if (err) console.log('Err: ', err);
-        console.log('Val: ', val);
-    }
+        console.log('finData: ', finData);
 
-    getData(uid, authToken, printCB);
+        var formattedData = formatData(finData);
+        console.log('formattedData: ', formattedData);
+
+    });
 }
 
 
