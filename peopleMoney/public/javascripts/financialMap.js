@@ -12,7 +12,7 @@ var svg;
 
 
 var width = $('#map-container').width(),
-    height = 600;
+    height = 800;
 
 
 function makeSvg() {
@@ -33,7 +33,7 @@ function getData(uid, authToken, cb) {
     });
 }
 
-function formatData(data) {
+function formatDataNodeLink(data) {
     // Take raw data and fill nodes and links.
     // var nodes = [{
     //         name: 'user',
@@ -144,7 +144,93 @@ function formatData(data) {
 }
 
 
-function createViz (data) {
+function formatDataTree(data) {
+
+    var accToIndex = {}; // Get index of an account by ID
+    var categoryLookup = {};
+
+    var root = {
+        name: 'user',
+        type: 'user',
+        categories: [],
+        accounts: []
+    }
+
+    // Create account nodes
+    _.each(data.accounts, function (account) {
+        var newNode = _.extend(account, {
+            name: account['account-name'],
+            type: account['account-type'],
+            id: account['account-id']
+        });
+
+        accToIndex[account['account-id']] = root.accounts.length;
+        root.accounts.push(newNode);
+    });
+
+
+    // Create category nodes and get sum of inflow to categories.
+    _.each(data.transactions, function (t,idx) {
+        if (idx > 20) return; // Hack to keep it small
+
+        if (!categoryLookup.hasOwnProperty(t.categorization)) {
+            // First time we saw this category
+            // Make node for category
+            var newCategoryNode = {
+                name: t.categorization,
+                type: 'category',
+                children: [],
+                val: t.amount * (-0.01) // Convert to outflow in cents
+            };
+
+            categoryLookup[t.categorization] = {
+                node: newCategoryNode,
+                index: root.categories.length
+            };
+            root.categories.push(newCategoryNode);
+        } else {
+            // We've seen it before, just make a link and update values.
+            var node = categoryLookup[t.categorization].node;
+            node.val += t.amount * (-0.01); // Convert to outflow in cents
+        }
+    });
+
+
+    //
+    // TODO: Sort categories and update categoryLookup
+    //
+
+
+    _.each(data.transactions, function (t, idx) {
+        if (idx > 20) return; // Hack to keep it small
+
+        // Node / link for transaction endpoint.
+        var newNode = {
+            name: t['raw-merchant'],
+            merchant: t.merchant,
+            type: 'transaction',
+            category: t.categorization,
+            id: t['transaction-id'],
+            time: t['transaction-time'],
+            isPending: t['is-pending'],
+            val: t.amount * (-0.01) // Convert to outflow in cents
+        };
+
+        var categoryNode = categoryLookup[t.categorization].node;
+        categoryNode.children.push(newNode);
+    });
+
+    //
+    // TODO: Sort transactions by estimated vendor / amount
+    //
+
+    // TODO: Decide if we need to create objects for links here.
+
+    return {root: root};
+}
+
+
+function createVizSplunk (data) {
 
     // SVG already exists. TODO: Why?
 
@@ -261,6 +347,123 @@ function createViz (data) {
 }
 
 
+function createViz (data) {
+
+    // SVG already exists. TODO: Why?
+
+    // Add the graph group as a child of the main svg
+    var margin = 10;
+    var graphWidth = width - margin*2;
+    var graphHeight = height - margin*2;
+    var graph = svg
+        .append("g")
+        .attr("width", graphWidth)
+        .attr("height", graphHeight)
+        .attr("transform", "translate(" + margin + "," + margin + ")"); // Offsets coordinate system
+    var formatTooltip = function (d) {
+        return d.name;
+    }
+
+
+
+    // TODO: Play with settings
+    var sankey = d3.sankey()
+        .nodeWidth(15)
+        .nodePadding(10)
+        .size([graphWidth, graphHeight]);
+
+    var path = sankey.link();
+    sankey.nodes(data.nodes)
+        .links(data.links)
+        .layout(1);
+    var link = graph.append("g").selectAll(".link")
+        .data(data.links)
+        .enter().append("path")
+        .attr("class", "link")
+        .attr("d", path)
+        .style("stroke-width", function(d) {
+            return Math.max(1, d.dy);
+        })
+        .sort(function(a, b) {
+            return b.dy - a.dy;
+        });
+    link.append("title")
+        .text(formatTooltip);
+    var node = graph.append("g").selectAll(".node")
+        .data(data.nodes)
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        });
+    var color = d3.scale.category20();
+    // Draw the rectangles at each end of the link that
+    // correspond to a given node, and then decorate the chart
+    // with the names for each node.
+    node.append("rect")
+        .attr("height", function(d) {
+            return Math.max(d.dy,1);
+        })
+        .attr("width", sankey.nodeWidth())
+        .style("fill", function(d) {
+            d.color = color(d.name.replace(/ .*/, ""));
+            return d.color;
+        })
+        .style("stroke", function(d) {
+            return d3.rgb(d.color).darker(2);
+        })
+        .on("mouseover", function(node) {
+            var linksToHighlight = link.filter(function(d) {
+                return d.source.name === node.name || d.target.name === node.name;
+            });
+            linksToHighlight.classed('hovering', true);
+        })
+        .on("mouseout", function(node) {
+            var linksToHighlight = link.filter(function(d) {
+                return d.source.name === node.name || d.target.name === node.name;
+            });
+            linksToHighlight.classed('hovering', false);
+        })
+        .append("title")
+        .text(function(d) {
+            return formatLabel(d.name) + "\n" + d.value;
+        });
+    node.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+    })
+        .call(d3.behavior.drag()
+            .origin(function(d) {
+                return d;
+            })
+            .on("dragstart", function() {
+                this.parentNode.appendChild(this);
+            })
+            .on("drag", dragmove));
+    node.append("text")
+        .attr("x", -6)
+        .attr("y", function(d) {
+            return d.dy / 2;
+        })
+        .attr("dy", ".35em")
+        .attr("text-anchor", "end")
+        .attr("transform", null)
+        .text(function(d) {
+            return formatLabel(d.name);
+        })
+        .filter(function(d) {
+            return d.x < graphWidth / 2;
+        })
+        .attr("x", 6 + sankey.nodeWidth())
+        .attr("text-anchor", "start");
+
+    function dragmove(d) {
+        d3.select(this).attr("transform", "translate(" + d.x + "," + (d.y = Math.max(0, Math.min(graphHeight - d.dy, d3.event.y))) + ")");
+        sankey.relayout();
+        link.attr("d", path);
+    }
+}
+
 
 function init () {
     console.log('Initializing Financial Map');
@@ -274,14 +477,12 @@ function init () {
         console.log('finData: ', finData);
         console.log('D3: ', d3);
 
-        var formattedData = formatData(finData);
-        console.log('formattedData: ', formattedData);
-        createViz(formattedData);
+        var tree = formatDataTree(finData);
+        console.log('Tree: ', tree);
+        // createViz(formattedData);
 
     });
 }
-
-
 
 
 module.exports = {
