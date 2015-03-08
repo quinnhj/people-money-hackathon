@@ -106,11 +106,13 @@ function formatDataTree(data, allowedCategory) {
         }
     });
 
-
-    //
-    // TODO: Sort categories and update categoryLookup
-    //
-
+    // Sort categories by amount
+    root.categories = _.sortBy(root.categories, function (node) {
+        return -1 * node.val; // Descending
+    });
+    _.each(root.categories, function (node, i){
+        categoryLookup[node.name].index = i;
+    });
 
     _.each(data.transactions, function (t, idx) {
         // if (idx > 20) return; // Hack to keep it small
