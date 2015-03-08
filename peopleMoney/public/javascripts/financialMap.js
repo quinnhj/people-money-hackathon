@@ -18,6 +18,8 @@ $(document).mousemove( function(e) {
 
 
 var svg;
+var goals;
+var goalCategories;
 var financialData;
 var activeCategory;
 var color = d3.scale.category20();
@@ -37,7 +39,7 @@ var tooltip = d3.select("body")
 
 var width = $('#map-container').width(),
     height = 1000,
-    margin = 15;
+    margin = 40;
 
 
 function makeSvg() {
@@ -151,10 +153,9 @@ function formatDataTree(data, allowedCategory) {
 function positionsFromTree (root, graphWidth, graphHeight) {
     var nodes = [];
     var offsets = {
-        account: 0.1,
-        user: 0.2,
-        category: 0.5,
-        transaction: 0.9
+        user: 0.05,
+        category: 0.35,
+        transaction: 0.85
     };
 
     var totals = {
@@ -170,7 +171,8 @@ function positionsFromTree (root, graphWidth, graphHeight) {
 
 
 function positionsHelper (node, graphWidth, graphHeight, nodes, offsets, totals) {
-    var blank = { y: 0, x: 0, node: null , width: 25, height: 150};
+    var blank = { y: 0, x: 0, node: null , width: 60, height: 250};
+    if (node.type === 'account') return;
 
     // Recursively call children
     if (node.type === 'user') {
@@ -291,6 +293,28 @@ function getLinksFromNodes (nodes) {
                 y0: child.y,
                 y1: child.y + child.height
             }
+
+            // Category color check
+            if (node.node.type === 'user') {
+                var hasCategory = _.filter(goals, function (goal) {
+                    return goal.category.toLowerCase() === rawChild.name.toLowerCase();
+                })
+                if (hasCategory.length > 0) {
+                    linkEnd.goal = true;
+                    linkStart.goal = true;
+                }
+            } else if (node.node.type === 'category') {
+                var hasMerchant = _.filter(goals, function (goal) {
+                    return goal.merchant.toLowerCase() === rawChild.merchant.toLowerCase();
+                })
+                if (hasMerchant.length > 0) {
+                    linkEnd.goal = true;
+                    linkStart.goal = true;
+                }
+
+            }
+
+
             links.push([linkStart, linkEnd]);
         });
     });
@@ -311,14 +335,12 @@ function createViz (root) {
         .append("g")
         .attr("width", graphWidth)
         .attr("height", graphHeight)
-        .attr("transform", "translate(" + margin + "," + margin*2 + ")"); // Offsets coordinate system
+        .attr("transform", "translate(" + margin + "," + margin*3 + ")"); // Offsets coordinate system
 
     // TODO: Create position map from tree.
     var nodes = positionsFromTree(root, graphWidth, graphHeight);
     resizeNodes(nodes, graphWidth, graphHeight);
     var links = getLinksFromNodes(nodes);
-
-    console.log("Making Viz with nodes: ", nodes, " lilnks: ", links);
 
     var rect = svg.selectAll("rect")
         .data(nodes, function (d) {
@@ -367,6 +389,32 @@ function createViz (root) {
             return color(d.node.name);
         });
 
+    var textLabels = svg.selectAll("text")
+            .data(nodes);
+
+    textLabels.enter()
+        .append("text")
+
+    textLabels.attr("x", function (d) {
+            return d.x + 2;
+        })
+        .attr("y", function (d) {
+            return d.y - 2;
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .attr("fill", "black")
+        .text( function (d){
+            if (d.node.val) {
+                var amt = '$' + Math.floor(d.node.val) / 100;
+                return d.node.name + ' ( ' + amt + ' ) ';
+            }
+            return ''
+        });
+
+    textLabels.exit().remove();
+
+
     var area = d3.svg.area()
         .x(function (d) {
             return d.x;
@@ -385,16 +433,35 @@ function createViz (root) {
     path.exit().remove();
 
     path.enter().append("path")
-            .style("fill", "rgba(10,10,150,0.33")
+            .style("fill", function (d) {
+                if (d[0].goal) {
+                    return "rgba(10,10,150,0.8)";
+                }
+                return "rgba(10,10,150,0.33";
+            })
             .attr("class", "area")
             .attr("d", area);
 
-    path.style("fill", "rgba(10,10,150,0.33")
+    path.style("fill", function (d) {
+                if (d[0].goal) {
+                    return "rgba(10,10,150,0.8)";
+                }
+                return "rgba(10,10,150,0.33";
+            })
             .attr("class", "area")
             .attr("d", area);
 
 
-    rect.on("mouseover", function(d){tooltip.text(d.node.name); return tooltip.style("visibility", "visible");})
+    rect.on("mouseover", function(d){
+            if (d.node.type === 'category') {
+                tooltip.text('Expand / Shrink');
+            } else if (d.node.type === 'transaction') {
+                tooltip.text('Create Budget Goal');
+            } else if (d.node.type === 'user') {
+                tooltip.text('You!');
+            }
+            return tooltip.style("visibility", "visible");
+        })
         .on("mousemove", function(d){return tooltip.style("top",
             (d3.event.pageY-15)+"px").style("left",(d3.event.pageX+15)+"px");})
         .on("mouseout", function(d){return tooltip.style("visibility", "hidden");})
@@ -414,8 +481,17 @@ function createViz (root) {
                 $('#close-button').on('click', function() {
                     $(this).parent().parent().parent().remove();
                 });
-                $('#goalSubmit').click(function () {
-
+                var category = d.node.category;
+                $('#goalSubmit').click(function (e) {
+                    e.preventDefault();
+                    var merchant = $('#merchantName').text();
+                    var percentage = $('#percentage').val();
+                    restApi.setGoal(uid, authToken, merchant, percentage, category, function (err, data) {
+                        restApi.getGoals(uid, authToken, function (err, data) {
+                            goals = data.goalList;
+                            dataToViz(activeCategory);
+                        });
+                    });
                 });
             }
         });
@@ -432,14 +508,30 @@ function dataToViz (category) {
 function init () {
     console.log('Initializing Financial Map');
     makeSvg();
-    restApi.getData(uid, authToken, function (err, finData) {
-        if (err) {
-            console.log('ERROR: ', err);
-            return;
-        }
-        financialData = finData;
-        dataToViz('fakeCategory&&&');
+
+    restApi.getGoals(uid, authToken, function (err, data) {
+        goals = data.goalList;
+        console.log('Goals: ', goals);
+
+        restApi.getData(uid, authToken, function (err, finData) {
+            if (err) {
+                console.log('ERROR: ', err);
+                return;
+            }
+            financialData = finData;
+            dataToViz('fakeCategory&&&');
+
+            // TODO: Move this where it belongs
+            $('#map-container').append('<div id="categoryTitle"><h4>Categories</h4></div>');
+            $('#categoryTitle').css({'top': -10, 'left':width * 0.35, 'position':'absolute'});
+            $('#map-container').append('<div id="merchantTitle"><h4>Merchants</h4></div>');
+            $('#merchantTitle').css({'top': -10, 'left':width * 0.85, 'position':'absolute'});
+            $('#map-container').append('<div id="youTitle"><h4>You</h4></div>');
+            $('#youTitle').css({'top': -10, 'left':width * 0.05, 'position':'absolute'});
+
+        });
     });
+
 }
 
 
