@@ -6,6 +6,7 @@ var nexmoApi = require('../src/nexmoApi.js');
 var yodleeApi = require('../src/yodleeApi.js');
 var healthApi = require('../src/healthApi.js');
 var plotly = require('plotly')(privateConfig.plotlyUser, privateConfig.plotlyPass);
+var _ = require('underscore');
 
 var router = express.Router();
 
@@ -55,73 +56,87 @@ router.get('/hello', function(req, res, next) {
     //healthApi.getDeposits(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
     //healthApi.getExpenses(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
     //healthApi.getNetSpending(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
-    healthApi.getLastYearSavings(uid, authToken, printCB);
+    //healthApi.getLastYearSavings(uid, authToken, printCB);
+    healthApi.getYearHealthScore(uid, authToken, printCB);
 
     res.render('hello', { title: 'HelloWorld' });
 });
 
 router.get('/dashboard', function(req, res, next) {
-    var data = [
-      {
-        x: ["2013-10-04 22:23:00", "2013-11-04 22:23:00", "2013-12-04 22:23:00"],
-        y: [1, 3, 6],
-        text: ['F', 'C', 'B'],
-        type: "scatter",
-      }
-    ];
-    var layout = {
-        title: "Your Financial Health",
-        titlefont: {
-            family: "Courier New, monospace",
-            size: 24
-        },
-        xaxis:  {
-            title: "Date",
+    var uid = 1110570166;
+    var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
+    healthApi.getYearHealthScore(uid, authToken, function(err, arr) {
+        var months = arr[0];
+        var scores = arr[1];
+        var letterScores = _.map(scores, function(el) {
+            if (el >= 90 && el <= 100) return 'A';
+            else if (el < 90 && el >= 80) return 'B';
+            else if (el < 80 && el >= 70) return 'C';
+            else if (el < 70 && el >= 60) return 'D';
+            else return 'F';
+        });
+        var data = [
+          {
+            x: months,
+            y: scores,
+            text: letterScores,
+            type: "scatter",
+          }
+        ];
+        var layout = {
+            title: "Your Financial Health",
             titlefont: {
                 family: "Courier New, monospace",
-                size: 18,
-                color: "#7f7f7f"
-            }
-        },
-        yaxis:  {
-            title: "Y Values",
-            titlefont: {
-                family: "Courier New, monospace",
-                size: 18,
-                color: "#7f7f7f"
-            }
-        },
-        annotations: [
-            {
-                x: data[0].x[data[0].x.length-1],
-                y: data[0].y[data[0].y.length-1],
-                xref: "x",
-                yref: "y",
-                text: "Current Score: "+data[0].text[data[0].text.length-1],
-                showarrow: true,
-                font: {
+                size: 24
+            },
+            xaxis:  {
+                title: "Date",
+                titlefont: {
                     family: "Courier New, monospace",
-                    size: 16,
-                    color: "#ffffff"
-                },
-                align: "center",
-                arrowhead: 2,
-                arrowsize: 1,
-                arrowwidth: 2,
-                arrowcolor: "#636363",
-                ax: 20,
-                ay: -30,
-                bordercolor: "#c7c7c7",
-                borderwidth: 2,
-                borderpad: 4,
-                bgcolor: "#ff7f0e",
-                opacity: 0.8
-            }
-        ]
-    };
-    var graphOptions = {layout: layout, filename: "date-axes", fileopt: "overwrite"};
-    plotly.plot(data, graphOptions, function (err, msg) {
-        res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=640&height=480'});
+                    size: 18,
+                    color: "#7f7f7f"
+                }
+            },
+            yaxis:  {
+                title: "Score",
+                titlefont: {
+                    family: "Courier New, monospace",
+                    size: 18,
+                    color: "#7f7f7f"
+                }
+            },
+            annotations: [
+                {
+                    x: data[0].x[0],
+                    y: data[0].y[0],
+                    xref: "x",
+                    yref: "y",
+                    text: "Current Score: "+data[0].text[data[0].text.length-1],
+                    showarrow: true,
+                    font: {
+                        family: "Courier New, monospace",
+                        size: 16,
+                        color: "#ffffff"
+                    },
+                    align: "center",
+                    arrowhead: 2,
+                    arrowsize: 1,
+                    arrowwidth: 2,
+                    arrowcolor: "#636363",
+                    ax: 20,
+                    ay: -30,
+                    bordercolor: "#c7c7c7",
+                    borderwidth: 2,
+                    borderpad: 4,
+                    bgcolor: "#ff7f0e",
+                    opacity: 0.8
+                }
+            ]
+        };
+        var graphOptions = {layout: layout, filename: "date-axes", fileopt: "overwrite"};
+        plotly.plot(data, graphOptions, function (err, msg) {
+            res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=640&height=480'});
+        });
     });
 });
 
