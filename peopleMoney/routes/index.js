@@ -170,7 +170,7 @@ router.get('/dashboard', function(req, res, next) {
             } else {
                 percentChange = -1 * Math.abs(percentChange);
             }
-            newObj.percentChange = Math.round(percentChange);
+            newObj.percentChange = Math.max(0, Math.round(percentChange));
             goalsRender.push(newObj);
         }
         console.log(goalsRender);
