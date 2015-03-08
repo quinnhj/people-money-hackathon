@@ -200,7 +200,7 @@ function getYearHealthScore(uid, authToken, cb) {
             var denom = max - min;
             return num / denom
         });
-        cb(err, [formattedDates, rescaledScore]);
+        cb(err, [formattedDates, rescaledScore, transactions]);
     }
     capitalApi.getAllTransactions(uid, authToken, f)
 }

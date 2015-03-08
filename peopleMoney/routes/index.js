@@ -135,8 +135,53 @@ router.get('/dashboard', function(req, res, next) {
             ]
         };
         var graphOptions = {layout: layout, filename: "date-axes", fileopt: "overwrite"};
+        // Goals Calculations Here
+        var transactions = arr[2];
+        var file = './src/goals.json';
+        var filedata = fs.readFileSync(file, {encoding: 'utf8'});
+        var obj = JSON.parse(filedata);
+        if (!obj[uid]) {
+            obj[uid] = [];
+        }
+        var goalList = obj[uid];
+        var goalsRender = [];
+        console.log('goalList', goalList);
+        for (i = 0; i < goalList.length; i++) {
+            if (i === 3) break;
+            var newObj = {}
+            newObj.goal = goalList[i];
+            var curr = 0.0;
+            var prev = 0.0;
+            var currDate = new Date(Date.now());
+            var tmp = new Date(Date.now());
+            var lastDate = new Date(tmp.setMonth(tmp.getMonth() - 1));
+            var last2Date = new Date(tmp.setMonth(tmp.getMonth() - 2));
+
+            _.each(transactions, function(el) {
+                var tTime = new Date(el['transaction-time']);
+                if (el['merchant'].toLowerCase() === goalList[i].merchant.toLowerCase()) {
+                    if( tTime >= lastDate && tTime <= currDate) {
+                        curr += el.amount;
+                    } else if (tTime >= last2Date && tTime < lastDate) {
+                        prev += el.amount;
+                    }
+                }
+            });
+            var percentChange = ((curr - prev) / prev) * 100;
+            if (curr === 0 && prev === 0) {
+                percentChange = 0;
+            }
+            if ((percentChange > 0 && goalList[i].percentage > 0) || (percentChange <= 0 && goalList[i].percentage <= 0)) {
+                percentChange = Math.abs(percentChange);
+            } else {
+                percentChange = -1 * Math.abs(percentChange);
+            }
+            newObj.percentChange = percentChange;
+            goalsRender.push(newObj);
+        }
+        console.log(goalsRender);
         plotly.plot(data, graphOptions, function (err, msg) {
-            res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=640&height=480'});
+            res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=640&height=480', goals: goalsRender});
         });
     });
 });
@@ -268,6 +313,34 @@ router.get('/setGoal', function(req, res, next) {
     fs.writeFileSync(file, JSON.stringify(obj, null, 4));
     payload.complete = true;
     res.send(payload);
+});
+
+router.get('/sendReminder', function(req, res, next) {
+    var file = './src/goals.json';
+    var uid = parseInt(req.query.uid);
+    var authToken = req.query.authToken;
+    var index = req.query.index;
+    var to = req.query.to;
+    var from = req.query.from;
+    var payload = {error: null};
+
+    var data = fs.readFileSync(file, {encoding: 'utf8'});
+    var obj = JSON.parse(data);
+    var goal = obj[uid][index];
+
+    var verb = (goal[percentage] > 0.0) ? "increase" : "decrease";
+    var text = "Don't forget about your goal to "+verb+" spending by "+Math.abs(goal[percentage]).toString()+"% at "+goal[merchant]+"!";
+    var args = {
+        "to": to,
+        "from": from,
+        "text": text
+    };
+    nexmoApi.sendMessage(args, function(err, cb) {
+        if (err) res.send({error: 'Error'});
+        payload.complete = true;
+        res.send(payload);
+    });
+
 });
 
 module.exports = router;
