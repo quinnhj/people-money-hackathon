@@ -8,6 +8,14 @@ var _           = require('underscore');
 var uid = 1110568334;
 var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
 
+var mouseX;
+var mouseY;
+$(document).mousemove( function(e) {
+    mouseX = e.pageX;
+    mouseY = e.pageY;
+});
+
+
 var svg;
 var financialData;
 var activeCategory;
@@ -418,7 +426,11 @@ function createViz (root) {
             }
             if (d.node.type === 'transaction') {
                 var html = Handlebars.templates["mapGoal"]({name: d.node.name});
-                console.log('HTML: ', html);
+                $('body').append(html);
+                $('.mapGoal').css({'top': mouseY, 'left':mouseX - 450}).fadeIn('slow');
+                $('#close-button').on('click', function() {
+                    $(this).parent().parent().parent().remove();
+                });
             }
         });
 
