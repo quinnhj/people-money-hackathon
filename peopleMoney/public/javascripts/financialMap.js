@@ -11,6 +11,7 @@ var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
 var svg;
 var financialData;
 var activeCategory;
+var color = d3.scale.category20();
 var numCategories = 0;
 var numTransactions = 0;
 
@@ -78,6 +79,7 @@ function formatDataTree(data, allowedCategory) {
     // Create category nodes and get sum of inflow to categories.
     _.each(data.transactions, function (t,idx) {
         // if (idx > 20) return; // Hack to keep it small
+        if (t.amount > 0) return; // Prevents income from being in expenses
 
         if (!categoryLookup.hasOwnProperty(t.categorization)) {
             // First time we saw this category
@@ -88,6 +90,7 @@ function formatDataTree(data, allowedCategory) {
                 name: t.categorization,
                 type: 'category',
                 children: [],
+                id: t.categorization,
                 val: t.amount * (-0.01) // Convert to outflow in cents
             };
 
@@ -111,6 +114,8 @@ function formatDataTree(data, allowedCategory) {
 
     _.each(data.transactions, function (t, idx) {
         // if (idx > 20) return; // Hack to keep it small
+        if (t.amount > 0) return; // Prevents income from being in expenses
+
 
         if (t.categorization === allowedCategory) {
             numTransactions += 1;
@@ -293,17 +298,14 @@ function getLinksFromNodes (nodes) {
 }
 
 
-
 function createViz (root) {
-
-    // SVG already exists. TODO: Why?
 
     // Add the graph group as a child of the main svg
     var margin = 10;
     var graphWidth = width - margin*2;
     var graphHeight = height - margin*2;
 
-    var color = d3.scale.category20();
+    // var color = d3.scale.category20();
 
     var graph = svg
         .append("g")
@@ -319,7 +321,9 @@ function createViz (root) {
     console.log("Making Viz with nodes: ", nodes, " lilnks: ", links);
 
     var rect = svg.selectAll("rect")
-        .data(nodes);
+        .data(nodes, function (d) {
+            return d.node.id;
+        });
 
     rect.exit().remove();
 
