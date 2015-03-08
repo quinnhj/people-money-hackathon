@@ -85,11 +85,6 @@ router.get('/dashboard', function(req, res, next) {
           }
         ];
         var layout = {
-            title: "Your Financial Health",
-            titlefont: {
-                family: "Courier New, monospace",
-                size: 24
-            },
             xaxis:  {
                 title: "Date",
                 titlefont: {
