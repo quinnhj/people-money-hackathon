@@ -159,7 +159,7 @@ router.get('/dashboard', function(req, res, next) {
 
             _.each(transactions, function(el) {
                 var tTime = new Date(el['transaction-time']);
-                if (el['merchant'] === goalList[i].merchant ) {
+                if (el['merchant'].toLowerCase() === goalList[i].merchant.toLowerCase()) {
                     if( tTime >= lastDate && tTime <= currDate) {
                         curr += el.amount;
                     } else if (tTime >= last2Date && tTime < lastDate) {
