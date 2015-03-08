@@ -36,7 +36,7 @@ function getData(uid, authToken, cb) {
 }
 
 
-function formatDataTree(data) {
+function formatDataTree(data, allowedCategory) {
 
     var accToIndex = {}; // Get index of an account by ID
     var categoryLookup = {};
@@ -99,22 +99,25 @@ function formatDataTree(data) {
     _.each(data.transactions, function (t, idx) {
         // if (idx > 20) return; // Hack to keep it small
 
-        numTransactions += 1;
+        if (!allowedCategory || t.categorization === allowedCategory) {
+            numTransactions += 1;
 
-        // Node / link for transaction endpoint.
-        var newNode = {
-            name: t['raw-merchant'],
-            merchant: t.merchant,
-            type: 'transaction',
-            category: t.categorization,
-            id: t['transaction-id'],
-            time: t['transaction-time'],
-            isPending: t['is-pending'],
-            val: t.amount * (-0.01) // Convert to outflow in cents
-        };
+            // Node / link for transaction endpoint.
+            var newNode = {
+                name: t['raw-merchant'],
+                merchant: t.merchant,
+                type: 'transaction',
+                category: t.categorization,
+                id: t['transaction-id'],
+                time: t['transaction-time'],
+                isPending: t['is-pending'],
+                val: t.amount * (-0.01) // Convert to outflow in cents
+            };
 
-        var categoryNode = categoryLookup[t.categorization].node;
-        categoryNode.children.push(newNode);
+            var categoryNode = categoryLookup[t.categorization].node;
+            categoryNode.children.push(newNode);
+        }
+
     });
 
     //
@@ -475,7 +478,7 @@ function init () {
         console.log('finData: ', finData);
         console.log('D3: ', d3);
 
-        var tree = formatDataTree(finData);
+        var tree = formatDataTree(finData, 'Unknown');
         console.log('Tree: ', tree);
         createViz(tree.root);
 
