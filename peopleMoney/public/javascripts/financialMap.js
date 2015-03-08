@@ -151,7 +151,7 @@ function formatDataTree(data, allowedCategory) {
 function positionsFromTree (root, graphWidth, graphHeight) {
     var nodes = [];
     var offsets = {
-        account: 0.1,
+        account: 0.01,
         user: 0.2,
         category: 0.5,
         transaction: 0.9
@@ -311,7 +311,7 @@ function createViz (root) {
         .append("g")
         .attr("width", graphWidth)
         .attr("height", graphHeight)
-        .attr("transform", "translate(" + margin + "," + margin*2 + ")"); // Offsets coordinate system
+        .attr("transform", "translate(" + margin + "," + margin*3 + ")"); // Offsets coordinate system
 
     // TODO: Create position map from tree.
     var nodes = positionsFromTree(root, graphWidth, graphHeight);
@@ -464,6 +464,15 @@ function init () {
         }
         financialData = finData;
         dataToViz('fakeCategory&&&');
+
+        // TODO: Move this where it belongs
+        $('#map-container').append('<div id="categoryTitle"><h4>Categories</h4></div>');
+        $('#categoryTitle').css({'top': -10, 'left':width * 0.5, 'position':'absolute'});
+        $('#map-container').append('<div id="merchantTitle"><h4>Merchants</h4></div>');
+        $('#merchantTitle').css({'top': -10, 'left':width * 0.9, 'position':'absolute'});
+        $('#map-container').append('<div id="youTitle"><h4>You</h4></div>');
+        $('#youTitle').css({'top': -10, 'left':width * 0.2, 'position':'absolute'});
+
     });
 }
 
