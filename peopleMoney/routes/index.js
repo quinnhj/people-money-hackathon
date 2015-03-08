@@ -5,6 +5,7 @@ var capitalApi = require('../src/capitalApi.js');
 var nexmoApi = require('../src/nexmoApi.js');
 var yodleeApi = require('../src/yodleeApi.js');
 var healthApi = require('../src/healthApi.js');
+var plotly = require('plotly')(privateConfig.plotlyUser, privateConfig.plotlyPass);
 
 var router = express.Router();
 
@@ -59,7 +60,68 @@ router.get('/hello', function(req, res, next) {
 });
 
 router.get('/dashboard', function(req, res, next) {
-    res.render('dashboard', {});
+    var data = [
+      {
+        x: ["2013-10-04 22:23:00", "2013-11-04 22:23:00", "2013-12-04 22:23:00"],
+        y: [1, 3, 6],
+        text: ['F', 'C', 'B'],
+        type: "scatter",
+      }
+    ];
+    var layout = {
+        title: "Your Financial Health",
+        titlefont: {
+            family: "Courier New, monospace",
+            size: 24
+        },
+        xaxis:  {
+            title: "Date",
+            titlefont: {
+                family: "Courier New, monospace",
+                size: 18,
+                color: "#7f7f7f"
+            }
+        },
+        yaxis:  {
+            title: "Y Values",
+            titlefont: {
+                family: "Courier New, monospace",
+                size: 18,
+                color: "#7f7f7f"
+            }
+        },
+        annotations: [
+            {
+                x: data[0].x[data[0].x.length-1],
+                y: data[0].y[data[0].y.length-1],
+                xref: "x",
+                yref: "y",
+                text: "Current Score: "+data[0].text[data[0].text.length-1],
+                showarrow: true,
+                font: {
+                    family: "Courier New, monospace",
+                    size: 16,
+                    color: "#ffffff"
+                },
+                align: "center",
+                arrowhead: 2,
+                arrowsize: 1,
+                arrowwidth: 2,
+                arrowcolor: "#636363",
+                ax: 20,
+                ay: -30,
+                bordercolor: "#c7c7c7",
+                borderwidth: 2,
+                borderpad: 4,
+                bgcolor: "#ff7f0e",
+                opacity: 0.8
+            }
+        ]
+    };
+    var graphOptions = {layout: layout, filename: "date-axes", fileopt: "overwrite"};
+    plotly.plot(data, graphOptions, function (err, msg) {
+        res.render('dashboard', {healthPlotUrl: msg.url+'.embed?width=640&height=480'});
+    });
 });
 
 router.get('/map', function(req, res, next) {

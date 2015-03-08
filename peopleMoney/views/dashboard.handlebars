@@ -50,11 +50,8 @@
     <div id="health-graph" class="panel-body">
         <h2>Financial Health</h2>
         <div id="health-graph-container">
-            {{! Append to using backbone }}
+            <iframe id="health-iframe" frameborder="0" seamless="seamless" scrolling="no" src="{{healthPlotUrl}}" ></iframe>
         </div>
-
-        {{! TODO: Remove once we auto populate }}
-        <img src="http://www.janwillemtulp.com/wp-content/uploads/2011/03/Line-chart.png">
     </div>
 </div>
 
