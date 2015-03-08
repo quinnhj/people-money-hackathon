@@ -4,6 +4,7 @@ var express = require('express');
 var capitalApi = require('../src/capitalApi.js');
 var nexmoApi = require('../src/nexmoApi.js');
 var yodleeApi = require('../src/yodleeApi.js');
+var healthApi = require('../src/healthApi.js');
 
 var router = express.Router();
 
@@ -23,12 +24,13 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/hello', function(req, res, next) {
-    // Capital one API Test
     var uid = 1110570166;
     var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
+    // Capital one API Test
     //capitalApi.getAllTransactions(uid, authToken, printCB);
-    capitalApi.getAllTransactions(uid, authToken, printCB, [Date.parse('2015-01-01T00:00:00.000Z'), Date.parse('2015-03-07T00:00:00.000Z')]);
+    //capitalApi.getAllTransactions(uid, authToken, printCB, [new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now())]);
     //capitalApi.getAccounts(uid, authToken, printCB);
+    //capitalApi.getRecentHistoricalAndProjectedBalances(uid, authToken, printCB)
 
     // Nexmo API Test
     //nexmoTest = {
@@ -43,6 +45,13 @@ router.get('/hello', function(req, res, next) {
     //var pass = 'sbMemwuda1#123';
     //yodleeApi.consumerLogin(user, pass, printCB);
     //yodleeApi.cobLogin(printCB);
+
+    // Health API Test
+    //healthApi.getDebtBalanceRatio(uid, authToken, printCB);
+    //healthApi.getTotalDebt(uid, authToken, printCB);
+    //healthApi.getTotalBalance(uid, authToken, printCB);
+    //healthApi.getNetWorth(uid, authToken, printCB);
+    //healthApi.getDeposits(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
 
     res.render('hello', { title: 'HelloWorld' });
 });
