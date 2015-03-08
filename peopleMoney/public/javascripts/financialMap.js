@@ -14,7 +14,7 @@ var numTransactions = 0;
 
 var width = $('#map-container').width(),
     height = 600,
-    margin = 6;
+    margin = 15;
 
 
 function makeSvg() {
@@ -235,6 +235,16 @@ function getLinksFromNodes (nodes) {
             children = node.node.children;
         }
 
+        // So we can partition edges coming out.
+        // TODO: Make it so expenses are treated differently from income (or filtered)
+        var runningSum = 0;
+        var total = 0;
+        _.each(children, function (rawChild) {
+            total += Math.abs(rawChild.val);
+        });
+
+
+        console.log('total: ', total);
         _.each(children, function (rawChild) {
             // TODO: Tag with colors
             // TODO: have hash / pointer, not search for rawChild
@@ -242,11 +252,19 @@ function getLinksFromNodes (nodes) {
             var child = _.find(nodes, function (v) {
                 return (v.node === rawChild);
             });
+            var ratio = (runningSum/total);
+            if (ratio > 1) {
+                console.log('BAD RATIO')
+                console.log('node: ', node, 'child: ', child);
+            }
+            var starty0 = Math.round( (runningSum/total) * node.height );
+            runningSum += Math.abs(rawChild.val);
+            var starty1 = Math.round( (runningSum/total) * node.height );
 
             var linkStart = {
                 x: node.x + node.width,
-                y0: node.y,
-                y1: node.y + node.height
+                y0: node.y + starty0,
+                y1: node.y + starty1
             }
             var linkEnd = {
                 x: child.x,
@@ -317,7 +335,8 @@ function createViz (root) {
         })
         .y1(function (d) {
             return d.y1;
-        });
+        })
+        .interpolate('cardinal');
 
     svg.selectAll("path.area")
             .data(links)
