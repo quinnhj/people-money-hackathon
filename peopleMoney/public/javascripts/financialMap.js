@@ -20,7 +20,7 @@ $(document).mousemove( function(e) {
 var svg;
 var financialData;
 var activeCategory;
-var color = d3.scale.category20();
+var color = d3.scale.category20c();
 var numCategories = 0;
 var numTransactions = 0;
 
@@ -151,10 +151,9 @@ function formatDataTree(data, allowedCategory) {
 function positionsFromTree (root, graphWidth, graphHeight) {
     var nodes = [];
     var offsets = {
-        account: 0.01,
-        user: 0.2,
-        category: 0.5,
-        transaction: 0.9
+        user: 0.05,
+        category: 0.35,
+        transaction: 0.85
     };
 
     var totals = {
@@ -171,6 +170,7 @@ function positionsFromTree (root, graphWidth, graphHeight) {
 
 function positionsHelper (node, graphWidth, graphHeight, nodes, offsets, totals) {
     var blank = { y: 0, x: 0, node: null , width: 60, height: 250};
+    if (node.type === 'account') return;
 
     // Recursively call children
     if (node.type === 'user') {
@@ -384,7 +384,8 @@ function createViz (root) {
         .attr("fill", "black")
         .text( function (d){
             if (d.node.val) {
-                return '$' + Math.floor(d.node.val) / 100;
+                var amt = '$' + Math.floor(d.node.val) / 100;
+                return d.node.name + ' ( ' + amt + ' ) ';
             }
             return ''
         });
@@ -419,7 +420,16 @@ function createViz (root) {
             .attr("d", area);
 
 
-    rect.on("mouseover", function(d){tooltip.text(d.node.name); return tooltip.style("visibility", "visible");})
+    rect.on("mouseover", function(d){
+            if (d.node.type === 'category') {
+                tooltip.text('Expand / Shrink');
+            } else if (d.node.type === 'transaction') {
+                tooltip.text('Create Budget Goal');
+            } else if (d.node.type === 'user') {
+                tooltip.text('You!');
+            }
+            return tooltip.style("visibility", "visible");
+        })
         .on("mousemove", function(d){return tooltip.style("top",
             (d3.event.pageY-15)+"px").style("left",(d3.event.pageX+15)+"px");})
         .on("mouseout", function(d){return tooltip.style("visibility", "hidden");})
@@ -467,11 +477,11 @@ function init () {
 
         // TODO: Move this where it belongs
         $('#map-container').append('<div id="categoryTitle"><h4>Categories</h4></div>');
-        $('#categoryTitle').css({'top': -10, 'left':width * 0.5, 'position':'absolute'});
+        $('#categoryTitle').css({'top': -10, 'left':width * 0.35, 'position':'absolute'});
         $('#map-container').append('<div id="merchantTitle"><h4>Merchants</h4></div>');
-        $('#merchantTitle').css({'top': -10, 'left':width * 0.9, 'position':'absolute'});
+        $('#merchantTitle').css({'top': -10, 'left':width * 0.85, 'position':'absolute'});
         $('#map-container').append('<div id="youTitle"><h4>You</h4></div>');
-        $('#youTitle').css({'top': -10, 'left':width * 0.2, 'position':'absolute'});
+        $('#youTitle').css({'top': -10, 'left':width * 0.05, 'position':'absolute'});
 
     });
 }
