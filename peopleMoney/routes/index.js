@@ -54,7 +54,8 @@ router.get('/hello', function(req, res, next) {
     //healthApi.getNetWorth(uid, authToken, printCB);
     //healthApi.getDeposits(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
     //healthApi.getExpenses(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
-    healthApi.getNetSpending(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
+    //healthApi.getNetSpending(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
+    //healthApi.getLastYearSavings(uid, authToken, printCB);
 
     res.render('hello', { title: 'HelloWorld' });
 });
@@ -130,6 +131,30 @@ router.get('/map', function(req, res, next) {
 
 router.get('/goals', function(req, res, next) {
     res.render('goals', {});
+});
+
+router.get('/details', function(req, res, next) {
+    var uid = 1110570166;
+    var authToken = '63C08C4AA6E3CB1A4B13C9C5299365C0';
+    healthApi.getLastYearSavings(uid, authToken, function(err, arr) {
+        if (err) res.send({error: 'error'});
+        var months = arr[0];
+        var values = arr[1];
+        var data = [
+            {
+                x: months,
+                y: values,
+                type: "scatter"
+            }
+        ];
+        var layout = {
+            title: "Monthly Savings"
+        }
+        var graphOptions = {layout: layout, filename: "date-axes", fileopt: "overwrite"};
+        plotly.plot(data, graphOptions, function(err, msg) {
+            res.render('details', {savingsGraphUrl: msg.url+'.embed?width=640&height=480'});
+        });
+    });
 });
 
 router.get('/settings', function(req, res, next) {
