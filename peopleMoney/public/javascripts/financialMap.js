@@ -43,8 +43,8 @@ function formatData(data) {
     var nodes = [];
     // Links use indices in node list.
     var links = [];
-    var accToIndex = {};
-
+    var accToIndex = {}; // Get index of an account by ID
+    var categoryLookup = {};
 
     _.each(data.accounts, function (account) {
         var newNode = _.extend(account, {
@@ -58,6 +58,7 @@ function formatData(data) {
     });
 
     _.each(data.transactions, function (t) {
+        // Node / link for transaction endpoint.
         var newNode = {
             name: t['raw-merchant'],
             merchant: t.merchant,
@@ -71,11 +72,70 @@ function formatData(data) {
             id: t['transaction-id'],
             time: t['transaction-time'],
             isPending: t['is-pending'],
-            val: t.ammount * (-0.01) // Convert to outflow in cents
+            val: t.amount * (-0.01) // Convert to outflow in cents
         }
 
         nodes.push(newNode);
-        links.push(newLink);
+        // Uncomment if you want to have direct links from
+        // account to vendor without category in between.
+        // links.push(newLink);
+
+        // Create Node / links for categories
+
+        if (!categoryLookup.hasOwnProperty(newNode.category)) {
+            // First time we saw this category
+            // Make node for category
+
+            var newCategoryNode = {
+                name: newNode.category,
+                type: 'category'
+            };
+
+            // To category
+            var newCategoryLink1 = {
+                src: newLink.src,
+                dst: nodes.length, // category
+                val: newLink.val
+            };
+
+            // From category to vendor
+            var newCategoryLink2 = {
+                src: nodes.length,
+                dst: newLink.dst,
+                id: newLink.id,
+                time: newLink.time,
+                isPending: newLink.isPending,
+                val: newLink.val
+            };
+
+            categoryLookup[newNode.category] = {
+                inLink: newCategoryLink1,
+                index: nodes.length
+            };
+
+            nodes.push(newCategoryNode);
+            links.push(newCategoryLink1);
+            links.push(newCategoryLink2);
+
+        } else {
+            // We've seen it before, just make a link and update values.
+
+            var categoryInLink = categoryLookup[newNode.category].inLink;
+            var categoryIndex = categoryLookup[newNode.category].index;
+            categoryInLink.val += newLink.val;
+
+            // From category to vendor
+            var newCategoryLink2 = {
+                src: categoryIndex,
+                dst: newLink.dst,
+                id: newLink.id,
+                time: newLink.time,
+                isPending: newLink.isPending,
+                val: newLink.val
+            };
+            links.push(newCategoryLink2);
+        }
+
     });
 
     return {nodes: nodes, links: links};
