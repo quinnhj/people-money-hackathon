@@ -13,7 +13,7 @@ var numCategories = 0;
 var numTransactions = 0;
 
 var width = $('#map-container').width(),
-    height = 600,
+    height = 1000,
     margin = 15;
 
 
@@ -64,7 +64,7 @@ function formatDataTree(data) {
 
     // Create category nodes and get sum of inflow to categories.
     _.each(data.transactions, function (t,idx) {
-        if (idx > 20) return; // Hack to keep it small
+        // if (idx > 20) return; // Hack to keep it small
 
         if (!categoryLookup.hasOwnProperty(t.categorization)) {
             // First time we saw this category
@@ -97,7 +97,7 @@ function formatDataTree(data) {
 
 
     _.each(data.transactions, function (t, idx) {
-        if (idx > 20) return; // Hack to keep it small
+        // if (idx > 20) return; // Hack to keep it small
 
         numTransactions += 1;
 
