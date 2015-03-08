@@ -449,8 +449,11 @@ function createViz (root) {
                 $('#close-button').on('click', function() {
                     $(this).parent().parent().parent().remove();
                 });
-                $('#goalSubmit').click(function () {
-
+                $('#goalSubmit').click(function (e) {
+                    e.preventDefault();
+                    var merchant = $('#merchantName').text();
+                    var percentage = $('#percentage').val();
+                    restApi.setGoal(uid, authToken, merchant, percentage, _.identity);
                 });
             }
         });
