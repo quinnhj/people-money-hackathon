@@ -15,19 +15,12 @@
         </div>
 
         {{! TODO: Remove once we auto populate }}
-        <div class="col-md-4 goal-panel well">
-            <p>Panel 1</p>
-        </div>
-        <div class="col-md-4 goal-panel well">
-            <p>Panel 2</p>
-        </div>
-        <div class="col-md-4 goal-panel well">
-            <p>Panel 3</p>
-        </div>
-        <div class="col-md-4 goal-panel well">
-            <p>Panel 4</p>
-        </div>
 
+        {{#each goals}}
+            <div class="col-md-4 goal-panel well">
+                <p>{{this.goal}}</p>
+            </div>
+        {{/each}}
     </div>
 </div>
 
