@@ -108,6 +108,39 @@ function getNetSpending(uid, authToken, startDate, endDate, cb) {
     }
     capitalApi.getAllTransactions(uid, authToken, f, [startDate, endDate]);
 }
+
+// Returns last year's savings (deposits - expenses) as tuple [dates, values]
+// values returned in dollars
+function getLastYearSavings(uid, authToken, cb) {
+    var f = function(err, transactions) {
+        var dates = [new Date(Date.now())];
+        var values = [];
+        for (i = 0; i < 12; i++) {
+            var newDate = new Date(dates[0]).setMonth(dates[0].getMonth() - i);
+            dates.push(new Date(newDate));
+        }
+        for (i = 0; i < dates.length-1; i++) {
+            var end = dates[i];
+            var start = dates[i+1];
+            var total = 0.0;
+            _.each(transactions, function(el) {
+                var amount = el.amount;
+                var date = new Date(el['transaction-time']);
+                if (start <= date && end >= date) {
+                    total += amount;
+                }
+            });
+            values.push(total);
+        }
+        var dollarValues = _.map(values, function(el) {
+            return (el / 10000.0).toFixed(2);
+        });
+        dates.shift();
+        cb(err, [dates, dollarValues]);
+    }
+    capitalApi.getAllTransactions(uid, authToken, f)
+}
+
 module.exports = {
     getDebtBalanceRatio: getDebtBalanceRatio,
     getTotalDebt: getTotalDebt,
@@ -115,5 +148,6 @@ module.exports = {
     getNetWorth: getNetWorth,
     getDeposits: getDeposits,
     getExpenses: getExpenses,
-    getNetSpending: getNetSpending
+    getNetSpending: getNetSpending,
+    getLastYearSavings: getLastYearSavings
 }
