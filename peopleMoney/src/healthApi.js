@@ -136,7 +136,10 @@ function getLastYearSavings(uid, authToken, cb) {
             return (el / 10000.0).toFixed(2);
         });
         dates.shift();
-        cb(err, [dates, dollarValues]);
+        var formattedDates = _.map(dates, function(el) {
+            return el.getFullYear()+'-'+(el.getMonth()+1).toString()+'-'+el.getDate();
+        });
+        cb(err, [formattedDates, dollarValues]);
     }
     capitalApi.getAllTransactions(uid, authToken, f)
 }
