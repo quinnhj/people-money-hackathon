@@ -310,8 +310,10 @@ router.get('/getGoals', function(req, res, next) {
                     percentChange = -1 * Math.abs(percentChange);
                 }
                 progressMap[goalList[i].merchant.toLowerCase()] = Math.round(percentChange);
+                goalList[i].percentChange = Math.round(percentChange);
             }
             payload.progress = progressMap;
+            payload.goalList = goalList;
             res.send(payload);
         });
     } else {
