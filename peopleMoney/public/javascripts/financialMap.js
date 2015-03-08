@@ -9,8 +9,21 @@ var uid = 1110568334;
 var authToken = 'D88517D61377232E3BACE8CA3EA15E7B';
 
 var svg;
+var financialData;
+var activeCategory;
 var numCategories = 0;
 var numTransactions = 0;
+
+var tooltip = d3.select("body")
+    .append("div")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("visibility", "hidden")
+    .style("background-color", "white")
+    .style("border", "1px solid")
+    .style("border-radius", "10px")
+    .style("padding", "3px")
+    .text("tooltip");
 
 var width = $('#map-container').width(),
     height = 1000,
@@ -99,7 +112,7 @@ function formatDataTree(data, allowedCategory) {
     _.each(data.transactions, function (t, idx) {
         // if (idx > 20) return; // Hack to keep it small
 
-        if (!allowedCategory || t.categorization === allowedCategory) {
+        if (t.categorization === allowedCategory) {
             numTransactions += 1;
 
             // Node / link for transaction endpoint.
@@ -247,7 +260,6 @@ function getLinksFromNodes (nodes) {
         });
 
 
-        console.log('total: ', total);
         _.each(children, function (rawChild) {
             // TODO: Tag with colors
             // TODO: have hash / pointer, not search for rawChild
@@ -301,16 +313,38 @@ function createViz (root) {
 
     // TODO: Create position map from tree.
     var nodes = positionsFromTree(root, graphWidth, graphHeight);
-    console.log('Nodes: ', nodes);
     resizeNodes(nodes, graphWidth, graphHeight);
     var links = getLinksFromNodes(nodes);
-    console.log('Links: ', links);
+
+    console.log("Making Viz with nodes: ", nodes, " lilnks: ", links);
 
     var rect = svg.selectAll("rect")
-        .data(nodes)
-        .enter()
+        .data(nodes);
+
+    rect.exit().remove();
+
+    rect.enter()
         .append("rect")
         .attr("x", function (d) {
+            return d.x;
+        })
+        .attr("y", function (d) {
+            return d.y;
+        })
+        .attr("height", function (d) {
+            return d.height;
+        })
+        .attr("width", function (d) {
+            return d.width;
+        })
+        .attr("fill", function (d) {
+            if (d.node.merchant) {
+                return color(d.node.merchant);
+            }
+            return color(d.node.name);
+        });
+
+    rect.attr("x", function (d) {
             return d.x;
         })
         .attr("y", function (d) {
@@ -341,28 +375,44 @@ function createViz (root) {
         })
         .interpolate('cardinal');
 
-    svg.selectAll("path.area")
-            .data(links)
-        .enter().append("path")
+    var path = svg.selectAll("path.area")
+            .data(links);
+
+    path.exit().remove();
+
+    path.enter().append("path")
             .style("fill", "rgba(10,10,150,0.33")
             .attr("class", "area")
             .attr("d", area);
 
-    var tooltip = d3.select("body")
-        .append("div")
-        .style("position", "absolute")
-        .style("z-index", "10")
-        .style("visibility", "hidden")
-        .style("background-color", "white")
-        .style("border", "1px solid")
-        .style("border-radius", "10px")
-        .style("padding", "3px")
-        .text("tooltip");
+    path.style("fill", "rgba(10,10,150,0.33")
+            .attr("class", "area")
+            .attr("d", area);
+
+
+
+
+
+
 
     rect.on("mouseover", function(d){tooltip.text(d.node.name); return tooltip.style("visibility", "visible");})
         .on("mousemove", function(d){return tooltip.style("top",
             (d3.event.pageY-15)+"px").style("left",(d3.event.pageX+15)+"px");})
-        .on("mouseout", function(d){return tooltip.style("visibility", "hidden");});
+        .on("mouseout", function(d){return tooltip.style("visibility", "hidden");})
+        .on("click", function (d){
+            if (d.node.type === 'category') {
+                if (d.node.name === activeCategory) {
+                    console.log('Undoing');
+                    dataToViz();
+                } else {
+                    dataToViz(d.node.name);
+                }
+            }
+        });
+
+
+
+
 
 
 
@@ -465,6 +515,12 @@ function createViz (root) {
     }
 }
 
+function dataToViz (category) {
+    activeCategory = category;
+    var tree = formatDataTree(financialData, category);
+    createViz(tree.root);
+}
+
 
 function init () {
     console.log('Initializing Financial Map');
@@ -474,14 +530,8 @@ function init () {
             console.log('ERROR: ', err);
             return;
         }
-
-        console.log('finData: ', finData);
-        console.log('D3: ', d3);
-
-        var tree = formatDataTree(finData, 'Unknown');
-        console.log('Tree: ', tree);
-        createViz(tree.root);
-
+        financialData = finData;
+        dataToViz('fakeCategory&&&');
     });
 }
 
