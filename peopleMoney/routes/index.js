@@ -7,6 +7,7 @@ var yodleeApi = require('../src/yodleeApi.js');
 var healthApi = require('../src/healthApi.js');
 var plotly = require('plotly')(privateConfig.plotlyUser, privateConfig.plotlyPass);
 var _ = require('underscore');
+var fs = require('fs');
 
 var router = express.Router();
 
@@ -219,5 +220,52 @@ router.get('/getFinancialData', function(req, res, next) {
 
 });
 
+router.get('/getGoals', function(req, res, next) {
+    var file = './src/goals.json';
+    var uid = parseInt(req.query.uid);
+    var authToken = req.query.authToken;
+
+    if (!uid || !authToken) {
+        res.send({error: 'Invalid uid or authToken'});
+        return;
+    }
+    var payload = {error: null};
+
+    var data = fs.readFileSync(file, {encoding: 'utf8'});
+    var json = JSON.parse(data);
+    if (!json[uid]) {
+        json[uid] = [];
+    }
+    var goalList = json[uid];
+    payload.goalList = goalList;
+    res.send(payload);
+});
+
+router.get('/setGoal', function(req, res, next) {
+    var file = './src/goals.json';
+    var uid = parseInt(req.query.uid);
+    var authToken = req.query.authToken;
+    var merchant = req.query.merchant;
+    var percentage = req.query.percentage;
+
+    if (!uid || !authToken) {
+        res.send({error: 'Invalid uid or authToken'});
+        return;
+    }
+    var payload = {error: null};
+    var data = fs.readFileSync(file, {encoding: 'utf8'});
+    var obj = JSON.parse(data);
+    if (!obj[uid]) {
+        obj[uid] = [];
+    }
+    var newGoal = {
+        'merchant': merchant,
+        'percentage': percentage
+    };
+    obj[uid].push(newGoal);
+    fs.writeFileSync(file, JSON.stringify(obj, null, 4));
+    payload.complete = true;
+    res.send(payload);
+});
 
 module.exports = router;
