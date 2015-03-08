@@ -22,7 +22,7 @@ var goals;
 var goalCategories;
 var financialData;
 var activeCategory;
-var color = d3.scale.category20();
+var color = d3.scale.category10();
 var numCategories = 0;
 var numTransactions = 0;
 
