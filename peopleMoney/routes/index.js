@@ -365,9 +365,11 @@ router.get('/sendReminder', function(req, res, next) {
     var data = fs.readFileSync(file, {encoding: 'utf8'});
     var obj = JSON.parse(data);
     var goal = obj[uid][index];
+    console.log('obj[uid]', obj[uid]);
+    console.log('goal', goal);
 
-    var verb = (goal[percentage] > 0.0) ? "increase" : "decrease";
-    var text = "Don't forget about your goal to "+verb+" spending by "+Math.abs(goal[percentage]).toString()+"% at "+goal[merchant]+"!";
+    var verb = (goal.percentage > 0.0) ? "increase" : "decrease";
+    var text = "Don't forget about your goal to "+verb+" spending by "+Math.abs(goal.percentage).toString()+" percent at "+goal.merchant+"!";
     var args = {
         "to": to,
         "from": from,
