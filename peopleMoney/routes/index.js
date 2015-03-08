@@ -111,7 +111,7 @@ router.get('/dashboard', function(req, res, next) {
                     showarrow: true,
                     font: {
                         family: "Courier New, monospace",
-                        size: 16,
+                        size: 14,
                         color: "#ffffff"
                     },
                     align: "center",
@@ -123,8 +123,8 @@ router.get('/dashboard', function(req, res, next) {
                     ay: -30,
                     bordercolor: "#c7c7c7",
                     borderwidth: 2,
-                    borderpad: 4,
-                    bgcolor: "#ff7f0e",
+                    borderpad: 2,
+                    bgcolor: "#003A6F",
                     opacity: 0.8
                 }
             ]
