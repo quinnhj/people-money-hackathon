@@ -3,6 +3,7 @@
 var d3          = require('d3');
 var request     = require('request');
 var _           = require('underscore');
+var restApi     = require('./restApi.js');
 
 // Globals! Because hackathon!
 var uid = 1110568334;
@@ -44,19 +45,6 @@ function makeSvg() {
         .attr("width", width)
         .attr("height", height);
 }
-
-function getData(uid, authToken, cb) {
-    var options = {
-        uri: location.origin + '/getFinancialData?uid=' + uid + '&authToken=' + authToken,
-        method: 'GET'
-    }
-    request(options, function (err, res, body) {
-        if (err) cb(err);
-        console.log('finished Req');
-        cb(false, JSON.parse(body));
-    });
-}
-
 
 function formatDataTree(data, allowedCategory) {
 
@@ -406,11 +394,6 @@ function createViz (root) {
             .attr("d", area);
 
 
-
-
-
-
-
     rect.on("mouseover", function(d){tooltip.text(d.node.name); return tooltip.style("visibility", "visible");})
         .on("mousemove", function(d){return tooltip.style("top",
             (d3.event.pageY-15)+"px").style("left",(d3.event.pageX+15)+"px");})
@@ -431,112 +414,12 @@ function createViz (root) {
                 $('#close-button').on('click', function() {
                     $(this).parent().parent().parent().remove();
                 });
+                $('#goalSubmit').click(function () {
+
+                });
             }
         });
 
-
-
-
-
-
-
-    return;
-
-    // TODO: Play with settings
-    var sankey = d3.sankey()
-        .nodeWidth(15)
-        .nodePadding(10)
-        .size([graphWidth, graphHeight]);
-
-    var path = sankey.link();
-    sankey.nodes(data.nodes)
-        .links(data.links)
-        .layout(1);
-    var link = graph.append("g").selectAll(".link")
-        .data(data.links)
-        .enter().append("path")
-        .attr("class", "link")
-        .attr("d", path)
-        .style("stroke-width", function(d) {
-            return Math.max(1, d.dy);
-        })
-        .sort(function(a, b) {
-            return b.dy - a.dy;
-        });
-    link.append("title")
-        .text(formatTooltip);
-    var node = graph.append("g").selectAll(".node")
-        .data(data.nodes)
-        .enter()
-        .append("g")
-        .attr("class", "node")
-        .attr("transform", function(d) {
-            return "translate(" + d.x + "," + d.y + ")";
-        });
-    // Draw the rectangles at each end of the link that
-    // correspond to a given node, and then decorate the chart
-    // with the names for each node.
-    node.append("rect")
-        .attr("height", function(d) {
-            return Math.max(d.dy,1);
-        })
-        .attr("width", sankey.nodeWidth())
-        .style("fill", function(d) {
-            d.color = color(d.name.replace(/ .*/, ""));
-            return d.color;
-        })
-        .style("stroke", function(d) {
-            return d3.rgb(d.color).darker(2);
-        })
-        .on("mouseover", function(node) {
-            var linksToHighlight = link.filter(function(d) {
-                return d.source.name === node.name || d.target.name === node.name;
-            });
-            linksToHighlight.classed('hovering', true);
-        })
-        .on("mouseout", function(node) {
-            var linksToHighlight = link.filter(function(d) {
-                return d.source.name === node.name || d.target.name === node.name;
-            });
-            linksToHighlight.classed('hovering', false);
-        })
-        .append("title")
-        .text(function(d) {
-            return formatLabel(d.name) + "\n" + d.value;
-        });
-    node.attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-    })
-        .call(d3.behavior.drag()
-            .origin(function(d) {
-                return d;
-            })
-            .on("dragstart", function() {
-                this.parentNode.appendChild(this);
-            })
-            .on("drag", dragmove));
-    node.append("text")
-        .attr("x", -6)
-        .attr("y", function(d) {
-            return d.dy / 2;
-        })
-        .attr("dy", ".35em")
-        .attr("text-anchor", "end")
-        .attr("transform", null)
-        .text(function(d) {
-            return formatLabel(d.name);
-        })
-        .filter(function(d) {
-            return d.x < graphWidth / 2;
-        })
-        .attr("x", 6 + sankey.nodeWidth())
-        .attr("text-anchor", "start");
-
-    function dragmove(d) {
-        d3.select(this).attr("transform", "translate(" + d.x + "," + (d.y = Math.max(0, Math.min(graphHeight - d.dy, d3.event.y))) + ")");
-        sankey.relayout();
-        link.attr("d", path);
-    }
 }
 
 function dataToViz (category) {
@@ -549,7 +432,7 @@ function dataToViz (category) {
 function init () {
     console.log('Initializing Financial Map');
     makeSvg();
-    getData(uid, authToken, function (err, finData) {
+    restApi.getData(uid, authToken, function (err, finData) {
         if (err) {
             console.log('ERROR: ', err);
             return;
