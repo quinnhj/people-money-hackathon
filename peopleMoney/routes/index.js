@@ -52,6 +52,8 @@ router.get('/hello', function(req, res, next) {
     //healthApi.getTotalBalance(uid, authToken, printCB);
     //healthApi.getNetWorth(uid, authToken, printCB);
     //healthApi.getDeposits(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
+    //healthApi.getExpenses(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
+    healthApi.getNetSpending(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
 
     res.render('hello', { title: 'HelloWorld' });
 });
