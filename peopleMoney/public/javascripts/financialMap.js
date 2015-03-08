@@ -3,6 +3,7 @@
 var d3          = require('d3');
 var request     = require('request');
 var _           = require('underscore');
+var restApi     = require('./restApi.js');
 
 // Globals! Because hackathon!
 var uid = 1110568334;
@@ -44,44 +45,6 @@ function makeSvg() {
         .attr("width", width)
         .attr("height", height);
 }
-
-
-function getGoals(uid, authToken, cb) {
-    var options = {
-        uri: location.origin + '/getGoals?uid=' + uid + '&authToken=' + authToken,
-        method: 'GET'
-    };
-    request(options, function (err, res, body) {
-        if (err) cb(err);
-        cb(false, JSON.parse(body));
-    });
-}
-
-
-function setGoal(uid, authToken, merchant, percentage, cb) {
-    var options = {
-        uri: location.origin + '/setGoal?uid=' + uid + '&authToken=' + authToken
-                + '&merchant=' + merchant + '&percentage=' + percentage,
-        method: 'GET'
-    };
-    request(options, function (err, res, body) {
-        if (err) cb(err);
-        cb(false, JSON.parse(body));
-    });
-}
-
-
-function getData(uid, authToken, cb) {
-    var options = {
-        uri: location.origin + '/getFinancialData?uid=' + uid + '&authToken=' + authToken,
-        method: 'GET'
-    }
-    request(options, function (err, res, body) {
-        if (err) cb(err);
-        cb(false, JSON.parse(body));
-    });
-}
-
 
 function formatDataTree(data, allowedCategory) {
 
@@ -577,7 +540,7 @@ function dataToViz (category) {
 function init () {
     console.log('Initializing Financial Map');
     makeSvg();
-    getData(uid, authToken, function (err, finData) {
+    restApi.getData(uid, authToken, function (err, finData) {
         if (err) {
             console.log('ERROR: ', err);
             return;
