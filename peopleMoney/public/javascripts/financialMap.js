@@ -140,12 +140,14 @@ function formatDataTree(data, allowedCategory) {
 
     });
 
-    //
-    // TODO: Sort transactions by estimated vendor / amount
-    //
+    // Sort transactions by merchant
+    _.each(root.categories, function (categoryNode, i){
+        var sortedChildren = _.sortBy(categoryNode.children, function (node) {
+            return node.merchant;
+        });
+        categoryNode.children = sortedChildren;
+    })
 
-    // TODO: Decide if we need to create objects for links here.
-    console.log('numCategories: ', numCategories, ' numTransactions: ', numTransactions);
     return {root: root};
 }
 
