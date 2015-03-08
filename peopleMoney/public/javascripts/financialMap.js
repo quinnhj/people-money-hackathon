@@ -486,7 +486,12 @@ function createViz (root) {
                     e.preventDefault();
                     var merchant = $('#merchantName').text();
                     var percentage = $('#percentage').val();
-                    restApi.setGoal(uid, authToken, merchant, percentage, category, _.identity);
+                    restApi.setGoal(uid, authToken, merchant, percentage, category, function (err, data) {
+                        restApi.getGoals(uid, authToken, function (err, data) {
+                            goals = data.goalList;
+                            dataToViz(activeCategory);
+                        });
+                    });
                 });
             }
         });
