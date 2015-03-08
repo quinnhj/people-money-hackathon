@@ -18,9 +18,11 @@ $(document).mousemove( function(e) {
 
 
 var svg;
+var goals;
+var goalCategories;
 var financialData;
 var activeCategory;
-var color = d3.scale.category20c();
+var color = d3.scale.category20();
 var numCategories = 0;
 var numTransactions = 0;
 
@@ -291,6 +293,28 @@ function getLinksFromNodes (nodes) {
                 y0: child.y,
                 y1: child.y + child.height
             }
+
+            // Category color check
+            if (node.node.type === 'user') {
+                var hasCategory = _.filter(goals, function (goal) {
+                    return goal.category.toLowerCase() === rawChild.name.toLowerCase();
+                })
+                if (hasCategory.length > 0) {
+                    linkEnd.goal = true;
+                    linkStart.goal = true;
+                }
+            } else if (node.node.type === 'category') {
+                var hasMerchant = _.filter(goals, function (goal) {
+                    return goal.merchant.toLowerCase() === rawChild.merchant.toLowerCase();
+                })
+                if (hasMerchant.length > 0) {
+                    linkEnd.goal = true;
+                    linkStart.goal = true;
+                }
+
+            }
+
+
             links.push([linkStart, linkEnd]);
         });
     });
@@ -317,8 +341,6 @@ function createViz (root) {
     var nodes = positionsFromTree(root, graphWidth, graphHeight);
     resizeNodes(nodes, graphWidth, graphHeight);
     var links = getLinksFromNodes(nodes);
-
-    console.log("Making Viz with nodes: ", nodes, " lilnks: ", links);
 
     var rect = svg.selectAll("rect")
         .data(nodes, function (d) {
@@ -411,11 +433,21 @@ function createViz (root) {
     path.exit().remove();
 
     path.enter().append("path")
-            .style("fill", "rgba(10,10,150,0.33")
+            .style("fill", function (d) {
+                if (d[0].goal) {
+                    return "rgba(10,10,150,0.8)";
+                }
+                return "rgba(10,10,150,0.33";
+            })
             .attr("class", "area")
             .attr("d", area);
 
-    path.style("fill", "rgba(10,10,150,0.33")
+    path.style("fill", function (d) {
+                if (d[0].goal) {
+                    return "rgba(10,10,150,0.8)";
+                }
+                return "rgba(10,10,150,0.33";
+            })
             .attr("class", "area")
             .attr("d", area);
 
@@ -449,11 +481,12 @@ function createViz (root) {
                 $('#close-button').on('click', function() {
                     $(this).parent().parent().parent().remove();
                 });
+                var category = d.node.category;
                 $('#goalSubmit').click(function (e) {
                     e.preventDefault();
                     var merchant = $('#merchantName').text();
                     var percentage = $('#percentage').val();
-                    restApi.setGoal(uid, authToken, merchant, percentage, _.identity);
+                    restApi.setGoal(uid, authToken, merchant, percentage, category, _.identity);
                 });
             }
         });
@@ -470,23 +503,30 @@ function dataToViz (category) {
 function init () {
     console.log('Initializing Financial Map');
     makeSvg();
-    restApi.getData(uid, authToken, function (err, finData) {
-        if (err) {
-            console.log('ERROR: ', err);
-            return;
-        }
-        financialData = finData;
-        dataToViz('fakeCategory&&&');
 
-        // TODO: Move this where it belongs
-        $('#map-container').append('<div id="categoryTitle"><h4>Categories</h4></div>');
-        $('#categoryTitle').css({'top': -10, 'left':width * 0.35, 'position':'absolute'});
-        $('#map-container').append('<div id="merchantTitle"><h4>Merchants</h4></div>');
-        $('#merchantTitle').css({'top': -10, 'left':width * 0.85, 'position':'absolute'});
-        $('#map-container').append('<div id="youTitle"><h4>You</h4></div>');
-        $('#youTitle').css({'top': -10, 'left':width * 0.05, 'position':'absolute'});
+    restApi.getGoals(uid, authToken, function (err, data) {
+        goals = data.goalList;
+        console.log('Goals: ', goals);
 
+        restApi.getData(uid, authToken, function (err, finData) {
+            if (err) {
+                console.log('ERROR: ', err);
+                return;
+            }
+            financialData = finData;
+            dataToViz('fakeCategory&&&');
+
+            // TODO: Move this where it belongs
+            $('#map-container').append('<div id="categoryTitle"><h4>Categories</h4></div>');
+            $('#categoryTitle').css({'top': -10, 'left':width * 0.35, 'position':'absolute'});
+            $('#map-container').append('<div id="merchantTitle"><h4>Merchants</h4></div>');
+            $('#merchantTitle').css({'top': -10, 'left':width * 0.85, 'position':'absolute'});
+            $('#map-container').append('<div id="youTitle"><h4>You</h4></div>');
+            $('#youTitle').css({'top': -10, 'left':width * 0.05, 'position':'absolute'});
+
+        });
     });
+
 }
 
 

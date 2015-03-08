@@ -247,6 +247,7 @@ router.get('/setGoal', function(req, res, next) {
     var authToken = req.query.authToken;
     var merchant = req.query.merchant;
     var percentage = req.query.percentage;
+    var category = req.query.category;
 
     if (!uid || !authToken) {
         res.send({error: 'Invalid uid or authToken'});
@@ -260,7 +261,8 @@ router.get('/setGoal', function(req, res, next) {
     }
     var newGoal = {
         'merchant': merchant,
-        'percentage': percentage
+        'percentage': percentage,
+        'category': category
     };
     obj[uid].push(newGoal);
     fs.writeFileSync(file, JSON.stringify(obj, null, 4));

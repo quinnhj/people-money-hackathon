@@ -14,10 +14,10 @@ function getGoals(uid, authToken, cb) {
 }
 
 
-function setGoal(uid, authToken, merchant, percentage, cb) {
+function setGoal(uid, authToken, merchant, percentage, category, cb) {
     var options = {
         uri: location.origin + '/setGoal?uid=' + uid + '&authToken=' + authToken
-                + '&merchant=' + merchant + '&percentage=' + percentage,
+                + '&merchant=' + merchant + '&percentage=' + percentage + '&category=' + category,
         method: 'GET'
     };
     request(options, function (err, res, body) {
