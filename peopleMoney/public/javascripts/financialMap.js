@@ -37,7 +37,7 @@ var tooltip = d3.select("body")
 
 var width = $('#map-container').width(),
     height = 1000,
-    margin = 15;
+    margin = 40;
 
 
 function makeSvg() {
@@ -170,7 +170,7 @@ function positionsFromTree (root, graphWidth, graphHeight) {
 
 
 function positionsHelper (node, graphWidth, graphHeight, nodes, offsets, totals) {
-    var blank = { y: 0, x: 0, node: null , width: 25, height: 150};
+    var blank = { y: 0, x: 0, node: null , width: 60, height: 250};
 
     // Recursively call children
     if (node.type === 'user') {
@@ -366,6 +366,31 @@ function createViz (root) {
             }
             return color(d.node.name);
         });
+
+    var textLabels = svg.selectAll("text")
+            .data(nodes);
+
+    textLabels.enter()
+        .append("text")
+
+    textLabels.attr("x", function (d) {
+            return d.x + 2;
+        })
+        .attr("y", function (d) {
+            return d.y - 2;
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .attr("fill", "black")
+        .text( function (d){
+            if (d.node.val) {
+                return '$' + Math.floor(d.node.val) / 100;
+            }
+            return ''
+        });
+
+    textLabels.exit().remove();
+
 
     var area = d3.svg.area()
         .x(function (d) {
