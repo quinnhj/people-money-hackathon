@@ -175,7 +175,7 @@ router.get('/dashboard', function(req, res, next) {
             } else {
                 percentChange = -1 * Math.abs(percentChange);
             }
-            newObj.percentChange = percentChange;
+            newObj.percentChange = Math.round(percentChange);
             goalsRender.push(newObj);
         }
         console.log(goalsRender);
@@ -314,7 +314,7 @@ router.get('/getGoals', function(req, res, next) {
                 } else {
                     percentChange = -1 * Math.abs(percentChange);
                 }
-                progressMap[goalList[i].merchant.toLowerCase()] = percentChange;
+                progressMap[goalList[i].merchant.toLowerCase()] = Math.round(percentChange);
             }
             payload.progress = progressMap;
             res.send(payload);
@@ -358,8 +358,8 @@ router.get('/sendReminder', function(req, res, next) {
     var uid = parseInt(req.query.uid);
     var authToken = req.query.authToken;
     var index = req.query.index;
-    var to = req.query.to;
-    var from = req.query.from;
+    var to = parseInt(req.query.to);
+    var from = parseInt(req.query.from);
     var payload = {error: null};
 
     var data = fs.readFileSync(file, {encoding: 'utf8'});
