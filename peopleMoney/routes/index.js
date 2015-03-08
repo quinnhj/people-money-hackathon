@@ -55,7 +55,7 @@ router.get('/hello', function(req, res, next) {
     //healthApi.getDeposits(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
     //healthApi.getExpenses(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
     //healthApi.getNetSpending(uid, authToken, new Date(2015, 0, 1, 0, 0, 0, 0), new Date(Date.now()), printCB);
-    //healthApi.getLastYearSavings(uid, authToken, printCB);
+    healthApi.getLastYearSavings(uid, authToken, printCB);
 
     res.render('hello', { title: 'HelloWorld' });
 });
@@ -148,7 +148,27 @@ router.get('/details', function(req, res, next) {
             }
         ];
         var layout = {
-            title: "Monthly Savings"
+            title: "Monthly Savings",
+            titlefont: {
+                family: "Courier New, monospace",
+                size: 24
+            },
+            xaxis:  {
+                title: "Date",
+                titlefont: {
+                    family: "Courier New, monospace",
+                    size: 18,
+                    color: "#7f7f7f"
+                }
+            },
+            yaxis:  {
+                title: "Dollars",
+                titlefont: {
+                    family: "Courier New, monospace",
+                    size: 18,
+                    color: "#7f7f7f"
+                }
+            }
         }
         var graphOptions = {layout: layout, filename: "date-axes", fileopt: "overwrite"};
         plotly.plot(data, graphOptions, function(err, msg) {
