@@ -14,11 +14,6 @@
             "merchant": "FUEL CITY",
             "percentage": "15",
             "category": "Gas & Fuel"
-        },
-        {
-            "merchant": "geico 000-000-0000 dc",
-            "percentage": "-30",
-            "category": "Auto Insurance"
         }
     ]
 }
