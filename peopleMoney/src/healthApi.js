@@ -144,6 +144,67 @@ function getLastYearSavings(uid, authToken, cb) {
     capitalApi.getAllTransactions(uid, authToken, f)
 }
 
+function getYearHealthScore(uid, authToken, cb) {
+    var f = function(err, transactions) {
+        var formattedDates = [];
+        var healthScores = [];
+        for ( j = 0; j < 12; j++) {
+            var firstMonth = new Date(Date.now());
+            firstMonth.setMonth(firstMonth.getMonth() - j);
+            firstMonth = new Date(firstMonth);
+            var dates = [firstMonth];
+            var values = [];
+            for (i = 0; i < 12; i++) {
+                var newDate = new Date(dates[0]).setMonth(dates[0].getMonth() - i);
+                dates.push(new Date(newDate));
+            }
+            for (i = 0; i < dates.length-1; i++) {
+                var end = dates[i];
+                var start = dates[i+1];
+                var total = 0.0;
+                _.each(transactions, function(el) {
+                    var amount = el.amount;
+                    var date = new Date(el['transaction-time']);
+                    if (start <= date && end >= date) {
+                        total += amount;
+                    }
+                });
+                values.push(total);
+            }
+            var dollarValues = _.map(values, function(el) {
+                return (el / 10000.0).toFixed(2);
+            });
+            dates.shift();
+            if (j === 0) {
+                formattedDates = _.map(dates, function(el) {
+                    return el.getFullYear()+'-'+(el.getMonth()+1).toString()+'-'+el.getDate();
+                });
+            }
+            // Add Decay
+            var decayConstant = 0.95;
+            for (k = 0; k < dollarValues.length; k++) {
+                var decay = Math.pow(decayConstant, k);
+                dollarValues[k] = dollarValues[k] * decay;
+            }
+            var healthScore = dollarValues.reduce(function(prev, curr, index, arr) {
+                return prev + curr;
+            });
+            healthScores.push(healthScore);
+        }
+        // Rescale Score
+        // This should be revisited; hackathon yolo
+        var min = Math.min.apply(Math, healthScores) - 25;
+        var max = Math.max.apply(Math, healthScores) + 50;
+        var rescaledScore = _.map(healthScores, function(el) {
+            var num = 100 * (el - min);
+            var denom = max - min;
+            return num / denom
+        });
+        cb(err, [formattedDates, rescaledScore]);
+    }
+    capitalApi.getAllTransactions(uid, authToken, f)
+}
+
 module.exports = {
     getDebtBalanceRatio: getDebtBalanceRatio,
     getTotalDebt: getTotalDebt,
@@ -152,5 +213,6 @@ module.exports = {
     getDeposits: getDeposits,
     getExpenses: getExpenses,
     getNetSpending: getNetSpending,
-    getLastYearSavings: getLastYearSavings
+    getLastYearSavings: getLastYearSavings,
+    getYearHealthScore: getYearHealthScore
 }
