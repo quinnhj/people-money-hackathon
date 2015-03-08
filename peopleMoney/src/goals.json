@@ -16,8 +16,8 @@
             "category": "Gas & Fuel"
         },
         {
-            "merchant": "GEICO 000-000-0000 DC",
-            "percentage": "-35",
+            "merchant": "geico 000-000-0000 dc",
+            "percentage": "-30",
             "category": "Auto Insurance"
         }
     ]

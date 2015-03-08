@@ -4,7 +4,7 @@ var request     = require('request');
 
 function getGoals(uid, authToken, cb) {
     var options = {
-        uri: location.origin + '/getGoals?uid=' + uid + '&authToken=' + authToken,
+        uri: location.origin + '/getGoals?uid=' + uid + '&authToken=' + authToken + '&progress=true',
         method: 'GET'
     };
     request(options, function (err, res, body) {

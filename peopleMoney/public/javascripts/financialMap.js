@@ -302,6 +302,9 @@ function getLinksFromNodes (nodes) {
                 if (hasCategory.length > 0) {
                     linkEnd.goal = true;
                     linkStart.goal = true;
+
+                    linkEnd.goal = hasCategory[0];
+
                 }
             } else if (node.node.type === 'category') {
                 var hasMerchant = _.filter(goals, function (goal) {
@@ -310,6 +313,7 @@ function getLinksFromNodes (nodes) {
                 if (hasMerchant.length > 0) {
                     linkEnd.goal = true;
                     linkStart.goal = true;
+                    linkEnd.goal = hasMerchant[0];
                 }
 
             }
@@ -432,23 +436,33 @@ function createViz (root) {
 
     path.exit().remove();
 
-    var regColor = "rgba(10,10,150,0.33)";
-    var goalColor = "rgba(8,178,36,0.6)";
+    var genColor = function (regular, percentage) {
+        if (regular) {
+            return "rgba(91,91,126,0.25)";
+        }
+        var opacity = 0.25 + ((Math.abs(percentage) * 0.75) / 100);
+        if (percentage >= 0) {
+            return "rgba(36,0,255," + opacity + ")";
+        } else {
+            return "rgba(203,27,60," + opacity + ")";
+        }
+    };
+
     path.enter().append("path")
             .style("fill", function (d) {
-                if (d[0].goal) {
-                    return goalColor;
+                if (d[1].goal) {
+                    return genColor(false, d[1].goal.percentChange);
                 }
-                return regColor;
+                return genColor(true);
             })
             .attr("class", "area")
             .attr("d", area);
 
     path.style("fill", function (d) {
-                if (d[0].goal) {
-                    return goalColor;
+                if (d[1].goal) {
+                    return genColor(false, d[1].goal.percentChange);
                 }
-                return regColor;
+                return genColor(true);
             })
             .attr("class", "area")
             .attr("d", area);
