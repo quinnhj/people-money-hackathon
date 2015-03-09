@@ -13,6 +13,8 @@ if (url.indexOf('map') > -1) {
     tab = 'goals';
 } else if (url.indexOf('settings') > -1) {
     tab = 'settings';
+} else if (url.indexOf('details') > -1) {
+    tab = 'details';
 }
 $('#' + tab + '-tab').addClass('active');
 
